@@ -14,6 +14,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import controller.Utils;
+import controller.receive.DeviceRegisteredCollector;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -34,7 +35,7 @@ public class Server implements Runnable{
 	/**
 	 * Instantiates a new server. First, initialize server channel and bind with port
 	 * Initialize channel selector and set server channel to non-blocking
-	 *
+	 * 
 	 * @param port -port will be opened
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
@@ -65,14 +66,37 @@ public class Server implements Runnable{
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
 					keys.remove();
-					if(key.isValid()&&key.isAcceptable()) {
-						accept(key);
-					}
-					if(key.isValid()&&key.isReadable()) {
-						read(key);
-					}
-					if(key.isValid()&&key.isWritable()) {
-						write(key);
+					try{
+						if(key.isAcceptable()) {
+							accept(key);
+						}
+						if(key.isReadable()) {
+							Utils.selectFunction(key, Utils.readHead((SocketChannel)key.channel()), true);
+							/**
+							 * Test code: since client(she) connected server(me), 
+							 * after that 5 seconds, I will disconnect her and
+							 * update DeviceListView
+							 */
+							/*Executors.newScheduledThreadPool(1).schedule(new Runnable() {
+								
+								@Override
+								public void run() {
+									// TODO Auto-generated method stub
+									try {
+										DeviceRegisteredCollector.close(socketChannel);
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+								}
+							}, 5, TimeUnit.SECONDS);*/
+						}
+						if(key.isWritable()) {
+							Utils.selectFunction(key, Utils.readHead((SocketChannel)key.channel()), false);
+						}
+					}catch (Exception e) {
+						// TODO: handle exception
+						DeviceRegisteredCollector.close((SocketChannel) key.channel());
 					}
 				}
 			}
@@ -93,33 +117,6 @@ public class Server implements Runnable{
 		SocketChannel socketChannel=serverSocketChannel.accept();
 		socketChannel.configureBlocking(false);
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
-	}
-	
-	/**
-	 * Write to client.
-	 *
-	 * @param key the key
-	 */
-	private void write(SelectionKey key) {
-		
-	}
-	
-	/**
-	 * Read data from socket sent by client depend on head to select function.
-	 *
-	 * @param key the key
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	private void read(SelectionKey key) throws IOException {
-		SocketChannel socketChannel=(SocketChannel) key.channel();
-		try {
-			socketChannel.configureBlocking(false);
-			Utils.selectFunction(selector, socketChannel, Utils.readHead(socketChannel), true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			socketChannel.close();
-			e.printStackTrace();
-		}
 	}
 
 	/**

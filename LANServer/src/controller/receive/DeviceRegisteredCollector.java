@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
@@ -22,14 +21,20 @@ import model.Device;
 // TODO: Auto-generated Javadoc
 /**
  * Class DeviceRegisteredCollector. it includes the function to read Device object sent by client
+ * Device-SocketChannel relationship is one-one, but java has no data structure
+ * that can implement that, i have to use two HashMap, also BiMap
+ * but i'm limited to using external library
  */
 public class DeviceRegisteredCollector {
 	
 	/** The devices collection. */
 	public static HashMap<SocketChannel, Device> devices=new HashMap<SocketChannel, Device>();
 	
+	/** The socket collection */
+	public static HashMap<Device, SocketChannel> sockets=new HashMap<Device, SocketChannel>();
+	
 	/** The property change support. Use to fire an event when a value changes*/
-	protected static PropertyChangeSupport propertyChangeSupport=new PropertyChangeSupport(new DeviceRegisteredCollector());
+	protected static PropertyChangeSupport deviceEvents=new PropertyChangeSupport(new DeviceRegisteredCollector());
 	
 	/**
 	 * Adds the property change listener.
@@ -37,18 +42,19 @@ public class DeviceRegisteredCollector {
 	 * @param listener the listener
 	 */
 	public static void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+        deviceEvents.addPropertyChangeListener(listener);
     }
 
 	/**
 	 * Read from socket. Take Device object sent by client
 	 * and fire event that Frame needs to capture it to handle
 	 *
-	 * @param selector the selector
-	 * @param socketChannel the socket channel
+	 * @param key -channel's key
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void read(Selector selector, SocketChannel socketChannel) throws IOException {
+	public static void read(SelectionKey key) throws IOException {
+		SocketChannel socketChannel=(SocketChannel) key.channel();
+		socketChannel.configureBlocking(false);
 		Device device=null;
 		ByteBuffer buff=ByteBuffer.allocate(1024);
 		try {
@@ -57,17 +63,28 @@ public class DeviceRegisteredCollector {
 			device=(Device) out.readObject();
 			out.close();
 			bin.close();
-			propertyChangeSupport.firePropertyChange("device.connected", null, device);
+			deviceEvents.firePropertyChange("device.connected", null, device);
 			devices.put(socketChannel, device);
-			socketChannel.register(selector, SelectionKey.OP_WRITE);
-		} catch (IOException | ClassNotFoundException e) {
-			propertyChangeSupport.firePropertyChange("device.disconnected", devices.get(socketChannel), null);
-			devices.remove(socketChannel);
-			e.printStackTrace();
-			socketChannel.close();
+			sockets.put(device, socketChannel);
+			socketChannel.register(key.selector(), SelectionKey.OP_WRITE);
+		} catch (ClassNotFoundException e) {
+			close(socketChannel);
 		} finally {
 			buff.clear();
 		}
 	}
 	
+	/**
+	 * Close connection. Simply close the connection 
+	 * do something to process when the error has occurred
+	 *
+	 * @param socketChannel the socket channel
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public static void close(SocketChannel socketChannel) throws IOException {
+		deviceEvents.firePropertyChange("device.disconnected", devices.get(socketChannel), null);
+		sockets.remove(devices.get(socketChannel));
+		devices.remove(socketChannel);
+		socketChannel.close();
+	}
 }

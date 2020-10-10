@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import controller.receive.DeviceRegisteredCollector;
@@ -26,17 +26,16 @@ public class Utils {
 	/**
 	 * selectFunction will choose the appropriate function depend on server sent packet header.
 	 *
-	 * @param selector      -to register a new key
-	 * @param socketChannel -to send/receive packet
+	 * @param key      -channel's key
 	 * @param head          -beginning of the received packet
 	 * @param isRead        -to indicate whether next action is send or receive
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void selectFunction(Selector selector, SocketChannel socketChannel, byte head, boolean isRead) throws IOException {
+	public static void selectFunction(SelectionKey key, byte head, boolean isRead) throws IOException {
 		if(isRead) {
 			switch (head) {
 			case (byte)1:
-				DeviceRegisteredCollector.read(selector, socketChannel);
+				DeviceRegisteredCollector.read(key);
 				break;
 			case (byte)2:
 				break;
@@ -91,13 +90,9 @@ public class Utils {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static byte readHead(SocketChannel socket) throws IOException {
+		socket.configureBlocking(false);
 		ByteBuffer buff=ByteBuffer.allocate(1);
-		try{
-			socket.read(buff);
-		}catch (IOException e) {
-			// TODO: handle exception, may be disconnected before reading
-			socket.close();
-		}
+		socket.read(buff);
 		byte res=buff.array()[0];
 		buff.clear();
 		return res;
@@ -113,14 +108,9 @@ public class Utils {
 	public static ByteArrayInputStream read2Array(SocketChannel socket) throws IOException {
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
 		ByteBuffer buff=ByteBuffer.allocate(1024);
-		try {
-			while((socket.read(buff))>0) {
-				bao.write(buff.array());
-				buff.compact();
-			}
-		} catch (IOException e) {
-			// TODO: handle exception, may be disconnected before reading
-			socket.close();
+		while((socket.read(buff))>0) {
+			bao.write(buff.array());
+			buff.compact();
 		}
 		buff.clear();
 		bao.close();
@@ -144,7 +134,7 @@ public class Utils {
 	}
 	
 	/**
-	 * Write data to socket.
+	 * Write data to socket with header.
 	 *
 	 * @param socket     -to read/write data
 	 * @param head       -packet header
@@ -155,6 +145,20 @@ public class Utils {
 		ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+1]);
 		packet.put(head);
 		packet.put(data);
+		packet.flip();
+		socket.write(packet);
+		packet.clear();
+	}
+	
+	/**
+	 * Write data to socket without header.
+	 *
+	 * @param socket     -to read/write data
+	 * @param data       -the packet you want to send
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public static void write2Socket(SocketChannel socket, byte[] data) throws IOException {
+		ByteBuffer packet=ByteBuffer.wrap(data);
 		packet.flip();
 		socket.write(packet);
 		packet.clear();

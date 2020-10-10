@@ -18,9 +18,6 @@ public class Device implements Serializable{
 	 * I dont know why I created it!?
 	 */
 	private static final long serialVersionUID = 1L;
-
-	/** is registered state. */
-	private boolean isRegistered;
 	
 	/** The local address. */
 	private InetAddress address;
@@ -37,13 +34,12 @@ public class Device implements Serializable{
 	 * @param model -machine model
 	 * @param isRegistered - is registered state
 	 */
-	public Device(InetAddress address, String os, String manufacturer, String model, boolean isRegistered) {
+	public Device(InetAddress address, String os, String manufacturer, String model) {
 		super();
 		this.address=address;
 		this.os=os;
 		this.manufacturer=manufacturer;
 		this.model=model;
-		this.isRegistered = isRegistered;
 	}
 	
 	/**
@@ -51,24 +47,6 @@ public class Device implements Serializable{
 	 */
 	public Device() {
 		super();
-	}
-	
-	/**
-	 * Checks if is registered.
-	 *
-	 * @return true, if is registered
-	 */
-	public boolean isRegistered() {
-		return isRegistered;
-	}
-	
-	/**
-	 * Sets the registered.
-	 *
-	 * @param isRegistered the new registered
-	 */
-	public void setRegistered(boolean isRegistered) {
-		this.isRegistered = isRegistered;
 	}
 	
 	/**

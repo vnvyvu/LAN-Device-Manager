@@ -18,7 +18,7 @@ public class ServerRunner {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-	            DeviceListView view=new DeviceListView();
+	            DeviceListForm view=new DeviceListForm();
 	            view.setLocationRelativeTo(null);
 	            view.setVisible(true);
 	        }

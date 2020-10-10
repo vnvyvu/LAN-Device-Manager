@@ -60,7 +60,7 @@ public class Client implements Runnable{
 	 * connect() method helps client shake hands with server
 	 * but not really connected in case the server has not responded. 
 	 * An infinite loop, instead of the selector collecting active channels, 
-	 * it collects channel's state keys every 1 second.
+	 * it collects channel's state keys every 1 second. 
 	 * Loop through keys and process depend on key state, Connectable or Writeable or Readable
 	 */
 	@Override
@@ -74,15 +74,19 @@ public class Client implements Runnable{
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
 					keys.remove();
-					if(key.isValid()&&key.isConnectable()) {
-						connect(key);
-					}else {
-						if(key.isValid()&&key.isWritable()) {
+					try{
+						if(key.isConnectable()) {
+							connect(key);
+						}
+						if(key.isWritable()) {
 							write(key);
 						}
-						if(key.isValid()&&key.isReadable()) {
+						if(key.isReadable()) {
 							read(key);
 						}
+					} catch (Exception e) {
+						// TODO: handle exception
+						key.channel().close();
 					}
 				}
 			}
@@ -120,8 +124,8 @@ public class Client implements Runnable{
 		SocketChannel socketChannel=(SocketChannel) key.channel();
 		if(this.afterConnect.get(socketChannel)!=null) {
 			this.afterConnect.remove(socketChannel);
-			Utils.selectFunction(selector, socketChannel, (byte)1, false);
-		}else Utils.selectFunction(selector, socketChannel, Utils.readHead(socketChannel), false);
+			Utils.selectFunction(key, (byte)1, false);
+		}else Utils.selectFunction(key, Utils.readHead(socketChannel), false);
 	}
 	
 	/**
@@ -130,7 +134,6 @@ public class Client implements Runnable{
 	 * @param key the key
 	 */
 	private void read(SelectionKey key) {
-		System.out.println("READ");
 	}
 	
 	/**

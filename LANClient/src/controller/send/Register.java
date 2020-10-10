@@ -12,7 +12,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import controller.Utils;
@@ -28,26 +28,20 @@ public class Register {
 	/**
 	 * Write/Send information of the internal of this device to channel.
 	 *
-	 * @param selector -to register a new key
-	 * @param socketChannel -to send/receive data
+	 * @param key -channel's key
 	 * @param head -packet/data header
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void write(Selector selector, SocketChannel socketChannel, byte head) throws IOException{
+	public static void write(SelectionKey key, byte head) throws IOException{
 		SystemInfo si=new SystemInfo();
 		String token[]=si.getHardware().getComputerSystem().toString().split("(, )|=");
 		Device device=new Device(getCorrectLocalIP(), si.getOperatingSystem().toString()+" "+
-				si.getOperatingSystem().getBitness()+" bits", token[1], token[3], true);
+				si.getOperatingSystem().getBitness()+" bits", token[1], token[3]);
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
 		ObjectOutputStream out;
 		out = new ObjectOutputStream(bao);
 		out.writeObject(device);
-		try{
-			Utils.write2Socket(socketChannel, head, bao.toByteArray());
-		}catch (IOException e) {
-			// TODO: handle exception
-			socketChannel.close();
-		}
+		Utils.write2Socket((SocketChannel) key.channel(), head, bao.toByteArray());
 		out.close();
 		bao.close();
 	}

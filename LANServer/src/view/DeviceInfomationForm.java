@@ -1,3 +1,8 @@
+/*
+ * Created by VyVu
+ * 
+ *  @author vutrivi99@gmail.com
+ */
 package view;
 
 import java.awt.GridLayout;
@@ -16,9 +21,7 @@ import model.Device;
 
 public class DeviceInfomationForm extends JFrame {
 
-	/**
-	 * 
-	 */
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField txtOS;
@@ -86,6 +89,8 @@ public class DeviceInfomationForm extends JFrame {
 		txtModel.setEditable(false);
 		contentPane.add(txtModel);
 		txtModel.setColumns(10);
+
+		setLocationRelativeTo(null);
 	}
 
 }

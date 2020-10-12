@@ -6,15 +6,13 @@
 
 package controller;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import controller.receive.FileReceiver;
 import controller.send.Register;
 
 // TODO: Auto-generated Javadoc
@@ -24,22 +22,21 @@ import controller.send.Register;
 public class Utils {
 	
 	/**
-	 * selectFunction will choose the appropriate function depend on server sent packet header.
+	 * selectFunction will choose the appropriate function depend on sent packet header.
 	 *
 	 * @param key           -channel's key
 	 * @param head          -beginning of the received packet
-	 * @param isRead        -to indicate whether next action is send or receive
+	 * @return true, if next action is writeable
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void selectFunction(SelectionKey key, byte head, boolean isRead) throws IOException {
-		if(isRead) {
-			switch (head) {
+	public static boolean selectFunction(SelectionKey key, byte head) throws IOException {
+		switch (head) {
 			case (byte)1:
-				break;
-			case (byte)2:
-				break;
-			case (byte)3:
-				break;
+				return Register.write((SocketChannel) key.channel(), head);
+			case (byte)2: 
+				return FileReceiver.readInfo((SocketChannel) key.channel());
+			case (byte)3: 
+				return FileReceiver.read((SocketChannel) key.channel());
 			case (byte)4:
 				break;
 			case (byte)5:
@@ -54,90 +51,59 @@ public class Utils {
 				break;
 			default:
 				break;
-			}
-		}else {
-			switch (head) {
-			case (byte)1:
-				Register.write(key, head);
-				break;
-			case (byte)2:
-				break;
-			case (byte)3:
-				break;
-			case (byte)4:
-				break;
-			case (byte)5:
-				break;
-			case (byte)6:
-				break;
-			case (byte)7:
-				break;
-			case (byte)8:
-				break;
-			case (byte)9:
-				break;
-			default:
-				break;
-			}
 		}
+		return false;
 	}
 	
 	/**
-	 * readHead function will return packet header. It needs to be done before reading data from socket
+	 * Read 1 byte from socket, it's packet header
 	 *
-	 * @param socket -to read/write data
+	 * @param socketChannel the socket channel
 	 * @return the byte is packet header
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static byte readHead(SocketChannel socket) throws IOException {
+	public static byte readHead(SocketChannel socketChannel) throws IOException {
 		ByteBuffer buff=ByteBuffer.allocate(1);
-		socket.read(buff);
+		socketChannel.read(buff);
 		byte res=buff.array()[0];
-		buff.clear();
 		return res;
 	}
 	
 	/**
-	 * Read data from socket to array. Do not do this without taking packet header
+	 * Read size(byte) from socket to array. Estimates the buffer size based on the sender's function
+	 * Do not do this without taking packet header
 	 *
-	 * @param socket -to read/write data
-	 * @return A new ByteArrayInputStream object is returned, which contains the data obtained
+	 * @param socketChannel the socket channel
+	 * @return A byte array read from socket
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static ByteArrayInputStream read2Array(SocketChannel socket) throws IOException {
+	public static byte[] read2Array(SocketChannel socketChannel, int size) throws IOException {
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
-		ByteBuffer buff=ByteBuffer.allocate(1024);
-		while((socket.read(buff))>0) {
-			bao.write(buff.array());
-			buff.compact();
-		}
-		buff.clear();
+		ByteBuffer buff=ByteBuffer.allocate(size);
+		socketChannel.read(buff);
+		bao.write(buff.array());
 		bao.close();
-		return new ByteArrayInputStream(bao.toByteArray());
+		return bao.toByteArray();
 	}
 	
 	/**
-	 * Read data from socket to file. Do not do this without taking packet header
+	 * Write header to socket. Usually used to request receiver to perform a function
 	 *
-	 * @param socket -to read/write data
-	 * @param path   -file path you want to write to
+	 * @param socketChannel socket channel
+	 * @param head header
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void read2File(SocketChannel socket, String path) throws IOException {
-		FileOutputStream fo=new FileOutputStream(new File(path), true);
-		ByteBuffer buff=ByteBuffer.allocate(1024);
-		while((socket.read(buff))>0) {
-			fo.write(buff.array());
-			buff.compact();
-		}
+	public static void writeHead(SocketChannel socketChannel, byte head) throws IOException {
+		socketChannel.write(ByteBuffer.wrap(new byte[] {head}));
 	}
 	
 	/**
-	 * Write data to socket.
+	 * Write data to socket with header. Buffer needs to be flip before writing. 
+	 * I don't know why...
 	 *
 	 * @param socket     -to read/write data
 	 * @param head       -packet header
-	 * @param data       -the packet you want to send
+	 * @param data       -the packet to send
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static void write2Socket(SocketChannel socket, byte head, byte[] data) throws IOException {

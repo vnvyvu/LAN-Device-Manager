@@ -14,7 +14,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import controller.Utils;
-import controller.receive.DeviceRegisteredCollector;
+import controller.receive.DeviceRegisteredReceiver;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -61,7 +61,7 @@ public class Server implements Runnable{
 		try {
 			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 			while(!Thread.currentThread().isInterrupted()) {
-				selector.select(1000);
+				selector.select(5000);
 				Iterator<SelectionKey> keys=selector.selectedKeys().iterator();
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
@@ -71,32 +71,20 @@ public class Server implements Runnable{
 							accept(key);
 						}
 						if(key.isReadable()) {
-							Utils.selectFunction(key, Utils.readHead((SocketChannel)key.channel()), true);
-							/**
-							 * Test code: since client(she) connected server(me), 
-							 * after that 5 seconds, I will disconnect her and
-							 * update DeviceListView
-							 */
-							/*Executors.newScheduledThreadPool(1).schedule(new Runnable() {
-								
-								@Override
-								public void run() {
-									// TODO Auto-generated method stub
-									try {
-										DeviceRegisteredCollector.close(socketChannel);
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-								}
-							}, 5, TimeUnit.SECONDS);*/
+							SocketChannel socketChannel=(SocketChannel) key.channel();
+							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+								socketChannel.register(selector, SelectionKey.OP_WRITE);
+							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
 						if(key.isWritable()) {
-							Utils.selectFunction(key, Utils.readHead((SocketChannel)key.channel()), false);
+							SocketChannel socketChannel=(SocketChannel) key.channel();
+							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+								socketChannel.register(selector, SelectionKey.OP_WRITE);
+							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
 					}catch (Exception e) {
 						// TODO: handle exception
-						DeviceRegisteredCollector.close((SocketChannel) key.channel());
+						DeviceRegisteredReceiver.close((SocketChannel) key.channel());
 					}
 				}
 			}

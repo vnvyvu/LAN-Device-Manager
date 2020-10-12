@@ -13,10 +13,13 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
 import javax.swing.GroupLayout;
@@ -26,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
@@ -33,7 +37,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import controller.receive.DeviceRegisteredCollector;
+import controller.Events;
+import controller.receive.DeviceRegisteredReceiver;
 import model.Device;
 
 
@@ -49,13 +54,21 @@ public class DeviceListForm extends JFrame {
 	/** The content pane. */
 	private JPanel contentPane;
 	
+	/** Selected devices */
+	
+	private HashMap<Device, SocketChannel> selectedDevices;
+	
 	/** The pane items. */
 	private HashMap<Device, JPanel> paneItems;
+	
+	/** Amount of devices. */
+	private JLabel lblAmount;
 	
 	/**
 	 * Create frame.
 	 */
 	public DeviceListForm() {
+		this.selectedDevices=new HashMap<Device, SocketChannel>();
 		this.paneItems=new HashMap<Device, JPanel>();
 		
 		setTitle("Device LAN Manager");
@@ -70,7 +83,7 @@ public class DeviceListForm extends JFrame {
 		list.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "Devices on LAN", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		FlowLayout flowLayout = (FlowLayout) list.getLayout();
 		flowLayout.setAlignment(FlowLayout.LEFT);
-		initProtocols(list);
+		initEvents(list);
 		contentPane.add(list, BorderLayout.CENTER);
 		
 		JPanel control = new JPanel();
@@ -81,7 +94,7 @@ public class DeviceListForm extends JFrame {
 		JButton btnSendFile = new JButton("Send file");
 		btnSendFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
+				sendFileBtnEvent();
 			}
 		});
 		control.add(btnSendFile);
@@ -107,7 +120,7 @@ public class DeviceListForm extends JFrame {
 		JLabel label_3 = new JLabel("");
 		control.add(label_3);
 		
-		JLabel lblAmount = new JLabel("Amount: 0");
+		lblAmount = new JLabel("Amount: 0");
 		lblAmount.setFont(new Font("Tahoma", Font.BOLD, 13));
 		control.add(lblAmount);
 		
@@ -129,8 +142,8 @@ public class DeviceListForm extends JFrame {
 		lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JCheckBox chckbxDevice = new JCheckBox("000.000.000.000");
-		chckbxDevice.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
+		chckbxDevice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				
 			}
 		});
@@ -162,9 +175,9 @@ public class DeviceListForm extends JFrame {
 	 *
 	 * @param list the list
 	 */
-	private void initProtocols(JPanel list) {
+	private void initEvents(JPanel list) {
 		// TODO Auto-generated method stub
-		DeviceRegisteredCollector.addPropertyChangeListener(new PropertyChangeListener() {
+		Events.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent arg0) {
 				// TODO Auto-generated method stub
@@ -190,6 +203,7 @@ public class DeviceListForm extends JFrame {
 		this.paneItems.remove(device);
 		list.revalidate();
 		list.repaint();
+		lblAmount.setText("Amount: "+this.paneItems.size());
 	}
 	
 	/**
@@ -217,6 +231,15 @@ public class DeviceListForm extends JFrame {
 		lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JCheckBox chckbxDevice = new JCheckBox(device.getAddress().getHostName());
+		chckbxDevice.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				if(chckbxDevice.isSelected()) {
+					selectedDevices.put(device, DeviceRegisteredReceiver.sockets.get(device));
+				}else selectedDevices.remove(device);
+			}
+		});
 		GroupLayout gl_paneIteam = new GroupLayout(paneItem);
 		gl_paneIteam.setHorizontalGroup(
 			gl_paneIteam.createParallelGroup(Alignment.TRAILING)
@@ -238,5 +261,15 @@ public class DeviceListForm extends JFrame {
 		);
 		paneItem.setLayout(gl_paneIteam);
 		this.paneItems.put(device, paneItem);
+		lblAmount.setText("Amount: "+this.paneItems.size());
+	}
+	
+	private void sendFileBtnEvent() {
+		if(selectedDevices.size()==0) {
+			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		(new SendFileForm(selectedDevices, this)).setVisible(true);
+		this.setEnabled(false);
 	}
 }

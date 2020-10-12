@@ -10,7 +10,6 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import controller.Utils;
@@ -33,9 +32,6 @@ public class Client implements Runnable{
 	/** The server address to connect. */
 	private String serverAddress;
 	
-	/** The after connect map. Several actions need to be taken immediately after connecting, this map helps to detect if the client just connected successfully or not.*/
-	private HashMap<SocketChannel, Boolean> afterConnect=new HashMap<SocketChannel, Boolean>();
-	
 	/**
 	 * Instantiates a new client. Create a client channel and set it to non-blocking
 	 * Initialize channel selector
@@ -55,8 +51,7 @@ public class Client implements Runnable{
 
 	/**
 	 * Run client.
-	 * First, we always have a channel to connect to
-	 * (can expand into a single client connecting to multiple servers). 
+	 * First, we always have a channel to connect
 	 * connect() method helps client shake hands with server
 	 * but not really connected in case the server has not responded. 
 	 * An infinite loop, instead of the selector collecting active channels, 
@@ -69,7 +64,7 @@ public class Client implements Runnable{
 			this.clientSocketChannel.register(this.selector, SelectionKey.OP_CONNECT);
 			this.clientSocketChannel.connect(new InetSocketAddress(this.serverAddress, this.serverPort));
 			while(!Thread.currentThread().isInterrupted()) {
-				this.selector.select(1000);
+				this.selector.select(5000);
 				Iterator<SelectionKey> keys=this.selector.selectedKeys().iterator();
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
@@ -78,11 +73,17 @@ public class Client implements Runnable{
 						if(key.isConnectable()) {
 							connect(key);
 						}
-						if(key.isWritable()) {
-							write(key);
+						if(key.isReadable()){
+							SocketChannel socketChannel=(SocketChannel) key.channel();
+							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+								socketChannel.register(selector, SelectionKey.OP_WRITE);
+							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
-						if(key.isReadable()) {
-							read(key);
+						if(key.isWritable()) {
+							SocketChannel socketChannel=(SocketChannel) key.channel();
+							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+								socketChannel.register(selector, SelectionKey.OP_WRITE);
+							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
 					} catch (Exception e) {
 						// TODO: handle exception
@@ -98,7 +99,7 @@ public class Client implements Runnable{
 	
 	/**
 	 * Connect. Check connection, if ready, call finishConnect() to finish
-	 * then add the channel to the map
+	 * then select function with head is 1 to send system info
 	 * 
 	 * @param key the key
 	 * @throws IOException Signals that an I/O exception has occurred.
@@ -108,32 +109,9 @@ public class Client implements Runnable{
 		socketChannel.configureBlocking(false);
 		if(socketChannel.isConnectionPending()) {
 			socketChannel.finishConnect();
-			this.afterConnect.put(socketChannel, true);
+			Utils.selectFunction(key, (byte)1);
 		}
-		socketChannel.register(selector, SelectionKey.OP_WRITE);
-	}
-	
-	/**
-	 * Write. Key's state is writable, so the channel attached to it is waiting for data to read
-	 * if previous key's state is connectable then performs a different action than writeable state
-	 *
-	 * @param key the key
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	private void write(SelectionKey key) throws IOException {
-		SocketChannel socketChannel=(SocketChannel) key.channel();
-		if(this.afterConnect.get(socketChannel)!=null) {
-			this.afterConnect.remove(socketChannel);
-			Utils.selectFunction(key, (byte)1, false);
-		}else Utils.selectFunction(key, Utils.readHead(socketChannel), false);
-	}
-	
-	/**
-	 * Read.
-	 *
-	 * @param key the key
-	 */
-	private void read(SelectionKey key) {
+		socketChannel.register(selector, SelectionKey.OP_READ);
 	}
 	
 	/**

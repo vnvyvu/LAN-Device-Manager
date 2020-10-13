@@ -47,13 +47,19 @@ public class FileReceiver {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean read(SocketChannel socketChannel) throws IOException {
-		ByteBuffer buff=ByteBuffer.allocate(32768);
+		ByteBuffer buff;
+		int count;
+		if(fileLength>=1024) {
+			buff=ByteBuffer.allocate(count=1024);
+		}else {
+			buff=ByteBuffer.allocate(count=1024-(int)fileLength);
+		}
 		socketChannel.read(buff);
 		FileOutputStream fo=new FileOutputStream(f, true);
 		fo.write(buff.array());
 		buff.clear();
 		fo.close();
-		fileLength-=buff.array().length;
+		fileLength-=count;
 		if(fileLength>0) Utils.writeHead(socketChannel, (byte)2);
 		return false;
 	}

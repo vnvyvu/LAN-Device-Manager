@@ -10,7 +10,7 @@ public class ClientRunner {
 		// TODO Auto-generated method stub
 		Client client;
 		try {
-			client = new Client("127.0.0.1", 1333);
+			client = new Client("localhost", 1333);
 			Thread thread=new Thread(client);
 			thread.start();
 		} catch (IOException e) {

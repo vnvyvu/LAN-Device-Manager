@@ -48,8 +48,8 @@ public class FileSender {
 		byte[] data;
 		long count=byteCount.get(socketChannel);
 		f.seek(count);
-		if(count+32768<f.length()) {
-			data=new byte[32768];
+		if(count+1024<f.length()) {
+			data=new byte[1024];
 			byteCount.put(socketChannel, count+data.length);
 			if(count%9015==0) Events.event.firePropertyChange("progress", 0, (int)(count*100/f.length()));
 		}else{

@@ -65,6 +65,7 @@ public class Utils {
 	public static byte readHead(SocketChannel socketChannel) throws IOException {
 		ByteBuffer buff=ByteBuffer.allocate(1);
 		socketChannel.read(buff);
+		buff.flip();
 		byte res=buff.array()[0];
 		return res;
 	}
@@ -81,6 +82,7 @@ public class Utils {
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
 		ByteBuffer buff=ByteBuffer.allocate(size);
 		socketChannel.read(buff);
+		buff.flip();
 		bao.write(buff.array());
 		bao.close();
 		return bao.toByteArray();

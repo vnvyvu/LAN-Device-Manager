@@ -52,12 +52,12 @@ public class FileReceiver {
 		if(fileLength>=1024) {
 			buff=ByteBuffer.allocate(count=1024);
 		}else {
-			buff=ByteBuffer.allocate(count=1024-(int)fileLength);
+			buff=ByteBuffer.allocate(count=(int)fileLength);
 		}
 		socketChannel.read(buff);
+		buff.flip();
 		FileOutputStream fo=new FileOutputStream(f, true);
 		fo.write(buff.array());
-		buff.clear();
 		fo.close();
 		fileLength-=count;
 		if(fileLength>0) Utils.writeHead(socketChannel, (byte)2);

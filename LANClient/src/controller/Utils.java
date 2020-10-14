@@ -13,6 +13,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import controller.receive.FileReceiver;
+import controller.receive.TurnOffReceiver;
 import controller.send.Register;
 
 // TODO: Auto-generated Javadoc
@@ -38,7 +39,7 @@ public class Utils {
 			case (byte)3: 
 				return FileReceiver.read((SocketChannel) key.channel());
 			case (byte)4:
-				break;
+				return TurnOffReceiver.read((SocketChannel) key.channel());
 			case (byte)5:
 				break;
 			case (byte)6:

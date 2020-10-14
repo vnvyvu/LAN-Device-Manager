@@ -38,7 +38,7 @@ public class FileSender {
 	}
 	
 	/**
-	 * Write 32kb/request. Fire event when done
+	 * Write 1kb/request. Fire event when done
 	 *
 	 * @param socketChannel the socket channel
 	 * @return always false to always at readable state

@@ -100,6 +100,11 @@ public class DeviceListForm extends JFrame {
 		control.add(btnSendFile);
 		
 		JButton btnTurnOff = new JButton("Turn off");
+		btnTurnOff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				turnOffBtnEvent();
+			}
+		});
 		control.add(btnTurnOff);
 		
 		JButton btnSystemInfomation = new JButton("System infomation");
@@ -270,6 +275,15 @@ public class DeviceListForm extends JFrame {
 			return;
 		}
 		(new SendFileForm(selectedDevices, this)).setVisible(true);
+		this.setEnabled(false);
+	}
+	
+	private void turnOffBtnEvent() {
+		if(selectedDevices.size()==0) {
+			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+		(new TurnOffForm(selectedDevices, this)).setVisible(true);
 		this.setEnabled(false);
 	}
 }

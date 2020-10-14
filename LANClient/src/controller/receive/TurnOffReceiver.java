@@ -46,7 +46,7 @@ public class TurnOffReceiver {
 	public static boolean read(SocketChannel socketChannel) throws IOException {
 		String info[]=new String(Utils.read2Array(socketChannel, 20)).split("\\?");
 		TurnOffMode mode=TurnOffMode.valueOf(info[0]);
-		long delay=Long.parseLong(info[1]);
+		long delay=Long.parseLong(info[1].trim());
 		Executors.newScheduledThreadPool(1).schedule(new Runnable() {
 			@Override
 			public void run() {
@@ -54,7 +54,7 @@ public class TurnOffReceiver {
 				switch (mode) {
 				case HIBERNATE:
 					try {
-						Runtime.getRuntime().exec("shutdown -h -f");
+						Runtime.getRuntime().exec("shutdown.exe -h -f");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -62,7 +62,7 @@ public class TurnOffReceiver {
 					break;
 				case RESTART:
 					try {
-						Runtime.getRuntime().exec("shutdown -r -f");
+						Runtime.getRuntime().exec("shutdown.exe -r -f");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -70,7 +70,7 @@ public class TurnOffReceiver {
 					break;
 				case SHUTDOWN:
 					try {
-						Runtime.getRuntime().exec("shutdown -p -f");
+						Runtime.getRuntime().exec("shutdown.exe -p -f");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -78,7 +78,7 @@ public class TurnOffReceiver {
 					break;
 				case LOG_OFF:
 					try {
-						Runtime.getRuntime().exec("shutdown -l -f");
+						Runtime.getRuntime().exec("shutdown.exe -l -f");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

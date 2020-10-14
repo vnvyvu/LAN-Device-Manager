@@ -44,11 +44,17 @@ public class Client implements Runnable{
 		super();
 		this.serverAddress=serverAddress;
 		this.serverPort = serverPort;
+		this.selector=Selector.open();
+		initClientChannel();
+	}
+	
+	private void initClientChannel() throws IOException {
 		this.clientSocketChannel=SocketChannel.open();
 		this.clientSocketChannel.configureBlocking(false);
-		this.selector=Selector.open();
+		this.clientSocketChannel.register(selector, SelectionKey.OP_CONNECT);
+		this.clientSocketChannel.connect(new InetSocketAddress(this.serverAddress, this.serverPort));
 	}
-
+	
 	/**
 	 * Run client.
 	 * First, we always have a channel to connect
@@ -61,17 +67,21 @@ public class Client implements Runnable{
 	@Override
 	public void run() {
 		try {
-			this.clientSocketChannel.register(this.selector, SelectionKey.OP_CONNECT);
-			this.clientSocketChannel.connect(new InetSocketAddress(this.serverAddress, this.serverPort));
 			while(!Thread.currentThread().isInterrupted()) {
-				this.selector.select(5000);
-				Iterator<SelectionKey> keys=this.selector.selectedKeys().iterator();
+				selector.select(5000);
+				Iterator<SelectionKey> keys=selector.selectedKeys().iterator();
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
 					keys.remove();
 					try{
-						if(key.isConnectable()) {
-							connect(key);
+						try{
+							if(key.isConnectable()) {
+								connect(key);
+							}
+						}catch (Exception e) {
+							// TODO: handle exception
+							initClientChannel();
+							continue;
 						}
 						if(key.isReadable()){
 							SocketChannel socketChannel=(SocketChannel) key.channel();
@@ -103,15 +113,15 @@ public class Client implements Runnable{
 	 * 
 	 * @param key the key
 	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException 
 	 */
 	private void connect(SelectionKey key) throws IOException {
 		SocketChannel socketChannel=(SocketChannel) key.channel();
-		socketChannel.configureBlocking(false);
 		if(socketChannel.isConnectionPending()) {
 			socketChannel.finishConnect();
 			Utils.selectFunction(key, (byte)1);
+			socketChannel.register(selector, SelectionKey.OP_READ);
 		}
-		socketChannel.register(selector, SelectionKey.OP_READ);
 	}
 	
 	/**

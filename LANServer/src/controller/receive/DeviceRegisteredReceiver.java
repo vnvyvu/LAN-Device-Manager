@@ -42,7 +42,7 @@ public class DeviceRegisteredReceiver {
 	public static boolean read(SocketChannel socketChannel) throws IOException {
 		Device device=null;
 		try {
-			ByteArrayInputStream bin=new ByteArrayInputStream(Utils.read2Array(socketChannel, 1024));
+			ByteArrayInputStream bin=new ByteArrayInputStream(Utils.read2Array(socketChannel, 256));
 			ObjectInputStream out=new ObjectInputStream(bin);
 			device=(Device) out.readObject();
 			out.close();

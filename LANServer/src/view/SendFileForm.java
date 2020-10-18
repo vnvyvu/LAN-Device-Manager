@@ -8,10 +8,6 @@ package view;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -23,10 +19,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import controller.Events;
 import controller.send.FileSender;
 import model.Device;
 
@@ -45,9 +41,6 @@ public class SendFileForm extends JFrame {
 	/** The txt file name. */
 	private JTextField txtFileName;
 	
-	/** The lbl progress. */
-	private JLabel lblProgress;
-	
 	/** The btn send. */
 	private JButton btnSend;
 	
@@ -55,6 +48,7 @@ public class SendFileForm extends JFrame {
 	private File file;
 	private JLabel lblNewLabel_1;
 	private JTextField txtClientDirectory;
+	public static JProgressBar progressSendFile;
 
 	/**
 	 * Create the frame.
@@ -62,15 +56,8 @@ public class SendFileForm extends JFrame {
 	 * @param paneItems the pane items
 	 * @param btnSendFile the btn send file
 	 */
-	public SendFileForm(HashMap<Device, SocketChannel> selectedDevices, JFrame deviceList) {
-		setAlwaysOnTop(true);
+	public SendFileForm(HashMap<Device, SocketChannel> selectedDevices) {
 		setResizable(false);
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent arg0) {
-				deviceList.setEnabled(true);
-			}
-		});
 		
 		setTitle("File Sender");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -93,15 +80,12 @@ public class SendFileForm extends JFrame {
 		contentPane.add(txtFileName);
 		txtFileName.setColumns(10);
 		
-		lblNewLabel_1 = new JLabel("Client directory(D:)");
+		lblNewLabel_1 = new JLabel("Client directory (Default: D:)");
 		contentPane.add(lblNewLabel_1);
 		
 		txtClientDirectory = new JTextField();
 		contentPane.add(txtClientDirectory);
 		txtClientDirectory.setColumns(10);
-		
-		lblProgress = new JLabel("Progress: ");
-		contentPane.add(lblProgress);
 		
 		btnSend = new JButton("Send");
 		btnSend.setMultiClickThreshhold(1000);
@@ -125,7 +109,10 @@ public class SendFileForm extends JFrame {
 			}
 		});
 		contentPane.add(btnSend);
-		initEvents();
+		
+		progressSendFile = new JProgressBar();
+		progressSendFile.setStringPainted(true);
+		contentPane.add(progressSendFile);
 		
 		setLocationRelativeTo(null);
 	}
@@ -141,20 +128,4 @@ public class SendFileForm extends JFrame {
 		}
 	}
 	
-	private void initEvents() {
-		Events.addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				// TODO Auto-generated method stub
-				if(evt.getPropertyName().equals("progress")) {
-					lblProgress.setText("Progress: "+(int)evt.getNewValue()+"%");
-					if((int)evt.getNewValue()==100) {
-						setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-						btnSend.setEnabled(true);
-						btnSend.setText("Send");
-					}
-				}
-			}
-		});
-	}
 }

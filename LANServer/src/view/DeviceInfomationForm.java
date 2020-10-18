@@ -47,7 +47,7 @@ public class DeviceInfomationForm extends JFrame {
 				});
 			}
 		});
-		setTitle(device.getAddress().getHostName());
+		setTitle(device.getName());
 		setBounds(100, 100, 540, 180);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -58,7 +58,7 @@ public class DeviceInfomationForm extends JFrame {
 		contentPane.add(lblNewLabel);
 		
 		txtOS = new JTextField();
-		txtOS.setText(device.getOS());
+		txtOS.setText(device.getOs());
 		txtOS.setEditable(false);
 		contentPane.add(txtOS);
 		txtOS.setColumns(10);
@@ -76,7 +76,7 @@ public class DeviceInfomationForm extends JFrame {
 		contentPane.add(lblNewLabel_1);
 		
 		txtAddress = new JTextField();
-		txtAddress.setText(device.getAddress().getHostAddress());
+		txtAddress.setText(device.getIp());
 		txtAddress.setEditable(false);
 		contentPane.add(txtAddress);
 		txtAddress.setColumns(10);

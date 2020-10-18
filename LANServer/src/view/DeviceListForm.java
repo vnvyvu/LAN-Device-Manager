@@ -40,6 +40,8 @@ import javax.swing.border.TitledBorder;
 import controller.Events;
 import controller.receive.DeviceRegisteredReceiver;
 import model.Device;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 
 // TODO: Auto-generated Javadoc
@@ -64,6 +66,7 @@ public class DeviceListForm extends JFrame {
 	/** Amount of devices. */
 	private JLabel lblAmount;
 	
+	private JPanel control;
 	/**
 	 * Create frame.
 	 */
@@ -86,7 +89,7 @@ public class DeviceListForm extends JFrame {
 		initEvents(list);
 		contentPane.add(list, BorderLayout.CENTER);
 		
-		JPanel control = new JPanel();
+		control = new JPanel();
 		control.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "Control", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		contentPane.add(control, BorderLayout.NORTH);
 		control.setLayout(new GridLayout(0, 4, 0, 0));
@@ -110,8 +113,13 @@ public class DeviceListForm extends JFrame {
 		JButton btnSystemInfomation = new JButton("System infomation");
 		control.add(btnSystemInfomation);
 		
-		JButton btnProcessRunning = new JButton("Process running");
-		control.add(btnProcessRunning);
+		JButton btnProcessManager = new JButton("Process manager");
+		btnProcessManager.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				processManagerBtnEvent();
+			}
+		});
+		control.add(btnProcessManager);
 		
 		JLabel label = new JLabel("");
 		control.add(label);
@@ -220,7 +228,7 @@ public class DeviceListForm extends JFrame {
 	private void addDevice(JPanel list, Device device) {
 		JPanel paneItem = new JPanel();
 		paneItem.setBorder(new LineBorder(new Color(0, 0, 0)));
-		paneItem.setToolTipText(device.getAddress().getHostAddress());
+		paneItem.setToolTipText(device.getIp());
 		list.add(paneItem);
 		
 		JLabel lblStatus = new JLabel();
@@ -235,7 +243,7 @@ public class DeviceListForm extends JFrame {
 		});
 		lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JCheckBox chckbxDevice = new JCheckBox(device.getAddress().getHostName());
+		JCheckBox chckbxDevice = new JCheckBox(device.getName());
 		chckbxDevice.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -274,8 +282,15 @@ public class DeviceListForm extends JFrame {
 			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-		(new SendFileForm(selectedDevices, this)).setVisible(true);
-		this.setEnabled(false);
+		JFrame temp=new SendFileForm(selectedDevices);
+		temp.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				control.setEnabled(true);
+			}
+		});
+		temp.setVisible(true);
+		control.setEnabled(false);
 	}
 	
 	private void turnOffBtnEvent() {
@@ -283,7 +298,25 @@ public class DeviceListForm extends JFrame {
 			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-		(new TurnOffForm(selectedDevices, this)).setVisible(true);
-		this.setEnabled(false);
+		JFrame temp=new ShutDownForm(selectedDevices);
+		temp.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				control.setEnabled(true);
+			}
+		});
+		temp.setVisible(true);
+		control.setEnabled(false);
+	}
+	private void processManagerBtnEvent() {
+		JFrame temp=new ProcessManagerForm(DeviceRegisteredReceiver.sockets);
+		temp.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				control.setEnabled(true);
+			}
+		});
+		temp.setVisible(true);
+		control.setEnabled(false);
 	}
 }

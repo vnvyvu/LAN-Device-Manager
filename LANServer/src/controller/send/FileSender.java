@@ -11,8 +11,8 @@ import java.io.RandomAccessFile;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
-import controller.Events;
 import controller.Utils;
+import view.SendFileForm;
 
 public class FileSender {
 	
@@ -21,6 +21,10 @@ public class FileSender {
 	
 	/** The file. */
 	public static RandomAccessFile f;
+	
+	/** Progress 1%*/
+	
+	public static long unit;
 	
 	/**
 	 * Write info including path, file name, length
@@ -34,6 +38,7 @@ public class FileSender {
 		String temp=clientPath+"\\"+file.getName()+"?"+file.length();
 		f=new RandomAccessFile(file, "r");
 		byteCount.put(socketChannel, (long)0);
+		unit=file.length()/100;
 		Utils.write2Socket(socketChannel, (byte)2, temp.getBytes("UTF-8"));
 	}
 	
@@ -51,11 +56,14 @@ public class FileSender {
 		if(count+1024<f.length()) {
 			data=new byte[1024];
 			byteCount.put(socketChannel, count+data.length);
-			if(count%9015==0) Events.event.firePropertyChange("progress", 0, (int)(count*100/f.length()));
+			if(count>=unit) {
+				SendFileForm.progressSendFile.setValue((int)(count/unit));
+				unit*=2;
+			}
 		}else{
 			data=new byte[(int) (f.length()-count)];
 			byteCount.remove(socketChannel);
-			Events.event.firePropertyChange("progress", 0, 100);
+			SendFileForm.progressSendFile.setValue(100);
 		}
 		f.read(data);
 		Utils.write2Socket(socketChannel, (byte)3, data);

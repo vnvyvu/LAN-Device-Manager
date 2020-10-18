@@ -6,7 +6,6 @@
 package model;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -14,67 +13,64 @@ import java.net.InetAddress;
  */
 public class Device implements Serializable{
 	
-	/**
-	 * I dont know why I created it!?
-	 */
+	/** I dont know why I created it!?. */
 	private static final long serialVersionUID = 1L;
 	
-	/** The local address. */
-	private InetAddress address;
-	
-	/** operating system, manufacturer, model. */
-	private String os, manufacturer, model;
+	/** name, ip, operating system, manufacturer, model. */
+	private String name, ip, os, manufacturer, model;
 	
 	/**
 	 * Instantiates a new device.
 	 *
-	 * @param address -local address
-	 * @param os -operating system
-	 * @param manufacturer -manufacturer
-	 * @param model -machine model
+	 * @param name the name machine
+	 * @param ip the ip
+	 * @param os the os
+	 * @param manufacturer the manufacturer
+	 * @param model the model
 	 */
-	public Device(InetAddress address, String os, String manufacturer, String model) {
+	public Device(String name, String ip, String os, String manufacturer, String model) {
 		super();
-		this.address=address;
-		this.os=os;
-		this.manufacturer=manufacturer;
-		this.model=model;
+		this.name = name;
+		this.ip = ip;
+		this.os = os;
+		this.manufacturer = manufacturer;
+		this.model = model;
 	}
-	
+
 	/**
 	 * Instantiates a new device.
 	 */
 	public Device() {
 		super();
 	}
-	
+
 	/**
-	 * Gets the address.
+	 * Gets the name.
 	 *
-	 * @return the address
+	 * @return the name
 	 */
-	public InetAddress getAddress() {
-		return address;
+	public String getName() {
+		return name;
 	}
-	
+
+	/**
+	 * Gets the ip.
+	 *
+	 * @return the ip
+	 */
+	public String getIp() {
+		return ip;
+	}
+
 	/**
 	 * Gets the os.
 	 *
 	 * @return the os
 	 */
-	public String getOS() {
+	public String getOs() {
 		return os;
 	}
-	
-	/**
-	 * Sets the address.
-	 *
-	 * @param address the new address
-	 */
-	public void setAddress(InetAddress address) {
-		this.address = address;
-	}
-	
+
 	/**
 	 * Gets the manufacturer.
 	 *
@@ -83,7 +79,7 @@ public class Device implements Serializable{
 	public String getManufacturer() {
 		return manufacturer;
 	}
-	
+
 	/**
 	 * Gets the model.
 	 *
@@ -92,4 +88,5 @@ public class Device implements Serializable{
 	public String getModel() {
 		return model;
 	}
+	
 }

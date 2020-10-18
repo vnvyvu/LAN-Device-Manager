@@ -13,7 +13,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import controller.receive.FileReceiver;
-import controller.receive.TurnOffReceiver;
+import controller.receive.ProcessConfigReceiver;
+import controller.receive.ShutDownReceiver;
 import controller.send.Register;
 
 // TODO: Auto-generated Javadoc
@@ -39,11 +40,11 @@ public class Utils {
 			case (byte)3: 
 				return FileReceiver.read((SocketChannel) key.channel());
 			case (byte)4:
-				return TurnOffReceiver.read((SocketChannel) key.channel());
+				return ShutDownReceiver.read((SocketChannel) key.channel());
 			case (byte)5:
-				break;
+				return ProcessConfigReceiver.read((SocketChannel) key.channel());
 			case (byte)6:
-				break;
+				return ProcessConfigReceiver.off((SocketChannel) key.channel());
 			case (byte)7:
 				break;
 			case (byte)8:

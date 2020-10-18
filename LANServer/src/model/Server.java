@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import controller.Utils;
 import controller.receive.DeviceRegisteredReceiver;
+import controller.send.ProcessConfigSender;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -69,6 +70,7 @@ public class Server implements Runnable{
 					try{
 						if(key.isAcceptable()) {
 							accept(key);
+							
 						}
 						if(key.isReadable()) {
 							SocketChannel socketChannel=(SocketChannel) key.channel();
@@ -104,6 +106,7 @@ public class Server implements Runnable{
 		ServerSocketChannel serverSocketChannel=(ServerSocketChannel) key.channel();
 		SocketChannel socketChannel=serverSocketChannel.accept();
 		socketChannel.configureBlocking(false);
+		ProcessConfigSender.on(socketChannel);
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
 	}
 

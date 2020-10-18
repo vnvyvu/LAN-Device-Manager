@@ -7,10 +7,15 @@
 package controller;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+
+import com.amihaiemil.eoyaml.Yaml;
+import com.amihaiemil.eoyaml.YamlMapping;
 
 import controller.receive.DeviceRegisteredReceiver;
 import controller.send.FileSender;
@@ -20,7 +25,6 @@ import controller.send.FileSender;
  * A static class. It includes commonly used functions for easy reuse
  */
 public class Utils {
-	
 	/**
 	 * selectFunction will choose the appropriate function depend on sent packet header.
 	 *
@@ -103,17 +107,21 @@ public class Utils {
 	 * Write data to socket with header. Buffer needs to be flip before writing. 
 	 * I don't know why...
 	 *
-	 * @param socket     -to read/write data
+	 * @param socketChannel     -to read/write data
 	 * @param head       -packet header
 	 * @param data       -the packet to send
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void write2Socket(SocketChannel socket, byte head, byte[] data) throws IOException {
+	public static void write2Socket(SocketChannel socketChannel, byte head, byte[] data) throws IOException {
 		ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+1]);
 		packet.put(head);
 		packet.put(data);
 		packet.flip();
-		socket.write(packet);
+		socketChannel.write(packet);
 		packet.clear();
+	}
+	
+	public static YamlMapping getConfig(String file) throws FileNotFoundException, IOException {
+		return Yaml.createYamlInput(new File(file)).readYamlMapping();
 	}
 }

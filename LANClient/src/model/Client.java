@@ -48,6 +48,11 @@ public class Client implements Runnable{
 		initClientChannel();
 	}
 	
+	/**
+	 * Open the client non-blocking channel, register with selector and connect to server
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	private void initClientChannel() throws IOException {
 		this.clientSocketChannel=SocketChannel.open();
 		this.clientSocketChannel.configureBlocking(false);
@@ -110,10 +115,9 @@ public class Client implements Runnable{
 	/**
 	 * Connect. Check connection, if ready, call finishConnect() to finish
 	 * then select function with head is 1 to send system info
-	 * 
+	 *
 	 * @param key the key
 	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws InterruptedException 
 	 */
 	private void connect(SelectionKey key) throws IOException {
 		SocketChannel socketChannel=(SocketChannel) key.channel();

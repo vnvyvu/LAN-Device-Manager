@@ -34,7 +34,8 @@ public class Register {
 	public static boolean write(SocketChannel socketChannel, byte head) throws IOException{
 		SystemInfo si=new SystemInfo();
 		String token[]=si.getHardware().getComputerSystem().toString().split("(, )|=");
-		Device device=new Device(getCorrectLocalIP(), si.getOperatingSystem().toString()+" "+
+		InetAddress address=getCorrectLocalIP();
+		Device device=new Device(address.getHostName(), address.getHostAddress(), si.getOperatingSystem().toString()+" "+
 				si.getOperatingSystem().getBitness()+" bits", token[1], token[3]);
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
 		ObjectOutputStream out;

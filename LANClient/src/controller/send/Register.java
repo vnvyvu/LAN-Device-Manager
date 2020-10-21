@@ -14,9 +14,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 
-import controller.Utils;
+import controller.PacketHandler;
+import controller.WMIC;
 import model.Device;
-import oshi.SystemInfo;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -32,16 +32,16 @@ public class Register {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean write(SocketChannel socketChannel, byte head) throws IOException{
-		SystemInfo si=new SystemInfo();
-		String token[]=si.getHardware().getComputerSystem().toString().split("(, )|=");
+		String token[]=WMIC.get("computersystem", "Manufacturer,Model").split("\s{2,}");
 		InetAddress address=getCorrectLocalIP();
-		Device device=new Device(address.getHostName(), address.getHostAddress(), si.getOperatingSystem().toString()+" "+
-				si.getOperatingSystem().getBitness()+" bits", token[1], token[3]);
+		Device device=new Device(address.getHostName(), address.getHostAddress(), 
+				WMIC.get("os", "Caption,Version,OSArchitecture").replaceAll("\s{2,}", "|"), 
+				token[0], token[1]);
 		ByteArrayOutputStream bao=new ByteArrayOutputStream();
 		ObjectOutputStream out;
 		out = new ObjectOutputStream(bao);
 		out.writeObject(device);
-		Utils.write2Socket(socketChannel, head, bao.toByteArray());
+		PacketHandler.write2Socket(socketChannel, head, bao.toByteArray());
 		out.close();
 		bao.close();
 		return false;

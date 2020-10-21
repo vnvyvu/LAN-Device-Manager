@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import controller.send.FileSender;
 import model.Device;
@@ -112,6 +114,17 @@ public class SendFileForm extends JFrame {
 		
 		progressSendFile = new JProgressBar();
 		progressSendFile.setStringPainted(true);
+		progressSendFile.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				// TODO Auto-generated method stub
+				if(progressSendFile.getValue()==100) {
+					btnSend.setEnabled(true);
+					btnSend.setText("Send");
+					setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				}
+			}
+		});
 		contentPane.add(progressSendFile);
 		
 		setLocationRelativeTo(null);

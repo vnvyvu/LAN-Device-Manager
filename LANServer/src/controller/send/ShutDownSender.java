@@ -8,7 +8,7 @@ package controller.send;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
-import controller.Utils;
+import controller.PacketHandler;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -44,6 +44,6 @@ public class ShutDownSender {
 	 */
 	public static void write(SocketChannel socketChannel, TurnOffMode mode, long delay) throws IOException {
 		String data=mode.name()+"?"+delay;
-		Utils.write2Socket(socketChannel, (byte)4, data.getBytes());
+		PacketHandler.write2Socket(socketChannel, (byte)4, data.getBytes());
 	}
 }

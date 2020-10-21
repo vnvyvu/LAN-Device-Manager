@@ -13,9 +13,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import controller.Utils;
+import controller.PacketHandler;
+import controller.WMIC;
 import controller.receive.ShutDownReceiver.TurnOffMode;
-import oshi.SystemInfo;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -39,8 +39,8 @@ public class ProcessConfigReceiver {
 	 * @return always false to always at readable state
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean read(SocketChannel socketChannel) throws IOException {
-		String data[]=new String(Utils.read2Array(socketChannel, 512)).split("\\?");
+	public static boolean read(SocketChannel socketChannel, int length) throws IOException {
+		String data[]=new String(PacketHandler.read2Array(socketChannel, length)).split("\\?");
 		mode=Integer.parseInt(data[0]);
 		blackist=data[1];
 		on(socketChannel);
@@ -48,31 +48,37 @@ public class ProcessConfigReceiver {
 	}
 	
 	/**
-	 * Turn on worker.
+	 * Turn on worker. Get all current process and kill matched
 	 *
 	 * @param socketChannel the socket channel
 	 */
 	public static void on(SocketChannel socketChannel) {
-		SystemInfo si=new SystemInfo();
 		worker.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				HashSet<String> ps=new HashSet<String>(
-						si.getOperatingSystem().getProcesses()
-						.stream().map(o->o.getName().toLowerCase()).collect(Collectors.toSet()));
-				ps.forEach(i->{
-					if(blackist.contains(i)) {
-						try {
-							action(i);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+				HashSet<String> ps;
+				try {
+					ps = new HashSet<String>(WMIC.getLines("process", "name")
+							.filter(l->l.matches(".+\\..+"))
+							.map(l->l.trim().toLowerCase().substring(0, l.lastIndexOf('.')))
+							.collect(Collectors.toSet()));
+					ps.forEach(i->{
+						if(blackist.contains(i)) {
+							try {
+								action(i);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
-					}
-				});
+					});
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
-		}, 0, 7, TimeUnit.SECONDS);
+		}, 0, 8, TimeUnit.SECONDS);
 	}
 	
 	/**
@@ -81,7 +87,7 @@ public class ProcessConfigReceiver {
 	 * @param socketChannel the socket channel
 	 * @return always false to always at readable state
 	 */
-	public static boolean off(SocketChannel socketChannel) {
+	public static boolean off() {
 		if(!worker.isShutdown()) worker.shutdown();
 		return false;
 	}

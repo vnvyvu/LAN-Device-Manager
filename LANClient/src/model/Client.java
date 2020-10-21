@@ -12,7 +12,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import controller.Utils;
+import controller.PacketHandler;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -90,13 +90,13 @@ public class Client implements Runnable{
 						}
 						if(key.isReadable()){
 							SocketChannel socketChannel=(SocketChannel) key.channel();
-							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+							if(PacketHandler.selectFunction(key, PacketHandler.readHead(socketChannel))) {
 								socketChannel.register(selector, SelectionKey.OP_WRITE);
 							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
 						if(key.isWritable()) {
 							SocketChannel socketChannel=(SocketChannel) key.channel();
-							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+							if(PacketHandler.selectFunction(key, PacketHandler.readHead(socketChannel))) {
 								socketChannel.register(selector, SelectionKey.OP_WRITE);
 							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
@@ -123,7 +123,7 @@ public class Client implements Runnable{
 		SocketChannel socketChannel=(SocketChannel) key.channel();
 		if(socketChannel.isConnectionPending()) {
 			socketChannel.finishConnect();
-			Utils.selectFunction(key, (byte)1);
+			PacketHandler.selectFunction(key, (byte)1);
 			socketChannel.register(selector, SelectionKey.OP_READ);
 		}
 	}

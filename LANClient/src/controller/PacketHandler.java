@@ -7,24 +7,24 @@
 package controller;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import com.amihaiemil.eoyaml.Yaml;
-import com.amihaiemil.eoyaml.YamlMapping;
-
-import controller.receive.DeviceRegisteredReceiver;
-import controller.send.FileSender;
+import controller.receive.FileReceiver;
+import controller.receive.ProcessConfigReceiver;
+import controller.receive.ShutDownReceiver;
+import controller.receive.USBDetectReceiver;
+import controller.send.Register;
 
 // TODO: Auto-generated Javadoc
 /**
  * A static class. It includes commonly used functions for easy reuse
  */
-public class Utils {
+public class PacketHandler {
+	
 	/**
 	 * selectFunction will choose the appropriate function depend on sent packet header.
 	 *
@@ -34,46 +34,60 @@ public class Utils {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean selectFunction(SelectionKey key, byte head) throws IOException {
+		SocketChannel socketChannel=(SocketChannel) key.channel();
+		int length=PacketHandler.readLength(socketChannel);
 		switch (head) {
 			case (byte)1:
-				return DeviceRegisteredReceiver.read((SocketChannel) key.channel());
+				return Register.write(socketChannel, head);
 			case (byte)2: 
-				return FileSender.write((SocketChannel) key.channel());
-			case (byte)3:
-				break;
+				return FileReceiver.readInfo(socketChannel, length);
+			case (byte)3: 
+				return FileReceiver.read(socketChannel, length);
 			case (byte)4:
-				break;
+				return ShutDownReceiver.read(socketChannel, length);
 			case (byte)5:
-				break;
+				return ProcessConfigReceiver.read(socketChannel, length);
 			case (byte)6:
-				break;
+				return ProcessConfigReceiver.off();
 			case (byte)7:
-				break;
+				return USBDetectReceiver.read(socketChannel, length);
 			case (byte)8:
-				break;
+				return USBDetectReceiver.off();
 			case (byte)9:
 				break;
 			default:
 				break;
 		}
-		return false;	
+		return false;
 	}
 	
 	/**
 	 * Read 1 byte from socket, it's packet header
 	 *
 	 * @param socketChannel the socket channel
-	 * @return the byte is packet header
+	 * @return the byte head
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static byte readHead(SocketChannel socketChannel) throws IOException {
 		ByteBuffer buff=ByteBuffer.allocate(1);
 		socketChannel.read(buff);
 		buff.flip();
-		byte res=buff.array()[0];
-		return res;
+		return buff.array()[0];
 	}
 	
+	/**
+	 * Read data length, read 2 bytes from socket.
+	 *
+	 * @param socketChannel the socket channel
+	 * @return the length
+	 * @throws IOException 
+	 */
+	public static int readLength(SocketChannel socketChannel) throws IOException {
+		ByteBuffer buff=ByteBuffer.allocate(2);
+		socketChannel.read(buff);
+		buff.flip();
+		return new BigInteger(buff.array()).intValue();
+	}
 	/**
 	 * Read size(byte) from socket to array. Estimates the buffer size based on the sender's function
 	 * Do not do this without taking packet header
@@ -104,24 +118,29 @@ public class Utils {
 	}
 	
 	/**
-	 * Write data to socket with header. Buffer needs to be flip before writing. 
+	 * Write data to socket with header and length. 
+	 * Need to inverse if length's size is 1
+	 * Buffer needs to be flip before writing.
+	 *  
 	 * I don't know why...
 	 *
-	 * @param socketChannel     -to read/write data
+	 * @param socket     -to read/write data
 	 * @param head       -packet header
 	 * @param data       -the packet to send
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void write2Socket(SocketChannel socketChannel, byte head, byte[] data) throws IOException {
-		ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+1]);
+	public static void write2Socket(SocketChannel socket, byte head, byte[] data) throws IOException {
+		byte[] temp=new BigInteger(""+data.length).toByteArray();
+		byte[] length=new byte[2];
+		if(temp.length==1) length[1]=temp[0];
+		else length=temp;
+		
+		ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+3]);
 		packet.put(head);
+		packet.put(length);
 		packet.put(data);
 		packet.flip();
-		socketChannel.write(packet);
+		socket.write(packet);
 		packet.clear();
-	}
-	
-	public static YamlMapping getConfig(String file) throws FileNotFoundException, IOException {
-		return Yaml.createYamlInput(new File(file)).readYamlMapping();
 	}
 }

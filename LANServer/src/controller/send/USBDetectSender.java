@@ -5,36 +5,40 @@
  */
 package controller.send;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.SocketChannel;
 
 import com.amihaiemil.eoyaml.YamlMapping;
 
 import controller.PacketHandler;
 
-public class ProcessConfigSender {
+// TODO: Auto-generated Javadoc
+/**
+ * The Class USBDetectSender.
+ */
+public class USBDetectSender {
 	
 	/**
-	 * Turn on process monitor in client side.
+	 * Turn on USB detect function in client side.
 	 *
 	 * @param socketChannel the socket channel
-	 * @throws FileNotFoundException the file not found exception
+	 * @throws UnsupportedEncodingException the unsupported encoding exception
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void on(SocketChannel socketChannel) throws FileNotFoundException, IOException {
+	public static void on(SocketChannel socketChannel) throws UnsupportedEncodingException, IOException {
 		YamlMapping config=PacketHandler.getConfig("config.yml");
-		String data=config.string("process-mode")+"?"+config.string("blacklist");
-		PacketHandler.write2Socket(socketChannel, (byte)5, data.getBytes("UTF-8"));
+		String data=config.string("usb-mode");
+		PacketHandler.write2Socket(socketChannel, (byte)7, data.getBytes("UTF-8"));
 	}
 	
 	/**
-	 * Turn off process monitor in client side.
+	 * Turn off USB detect function in client side.
 	 *
 	 * @param socketChannel the socket channel
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static void off(SocketChannel socketChannel) throws IOException {
-		PacketHandler.writeHead(socketChannel, (byte)6);
+		PacketHandler.writeHead(socketChannel, (byte)8);
 	}
 }

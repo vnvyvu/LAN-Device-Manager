@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import controller.Utils;
+import controller.PacketHandler;
 import view.SendFileForm;
 
 public class FileSender {
@@ -24,7 +27,7 @@ public class FileSender {
 	
 	/** Progress 1%*/
 	
-	public static long unit;
+	public static long count=0;
 	
 	/**
 	 * Write info including path, file name, length
@@ -38,8 +41,23 @@ public class FileSender {
 		String temp=clientPath+"\\"+file.getName()+"?"+file.length();
 		f=new RandomAccessFile(file, "r");
 		byteCount.put(socketChannel, (long)0);
-		unit=file.length()/100;
-		Utils.write2Socket(socketChannel, (byte)2, temp.getBytes("UTF-8"));
+		ScheduledExecutorService worker=Executors.newSingleThreadScheduledExecutor();
+		worker.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					SendFileForm.progressSendFile.setValue((int)(count*100/f.length()));
+					if(count==f.length()) {
+						worker.shutdown();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}, 1, 5, TimeUnit.SECONDS);
+		PacketHandler.write2Socket(socketChannel, (byte)2, temp.getBytes("UTF-8"));
 	}
 	
 	/**
@@ -51,22 +69,18 @@ public class FileSender {
 	 */
 	public static boolean write(SocketChannel socketChannel) throws IOException {
 		byte[] data;
-		long count=byteCount.get(socketChannel);
+		count=byteCount.get(socketChannel);
 		f.seek(count);
 		if(count+1024<f.length()) {
 			data=new byte[1024];
 			byteCount.put(socketChannel, count+data.length);
-			if(count>=unit) {
-				SendFileForm.progressSendFile.setValue((int)(count/unit));
-				unit*=2;
-			}
 		}else{
 			data=new byte[(int) (f.length()-count)];
+			count=f.length();
 			byteCount.remove(socketChannel);
-			SendFileForm.progressSendFile.setValue(100);
 		}
 		f.read(data);
-		Utils.write2Socket(socketChannel, (byte)3, data);
+		PacketHandler.write2Socket(socketChannel, (byte)3, data);
 		return false;
 	}
 }

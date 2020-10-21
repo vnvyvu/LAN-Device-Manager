@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import controller.Utils;
+import controller.PacketHandler;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -43,8 +43,8 @@ public class ShutDownReceiver {
 	 * @return false for always at readable state
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean read(SocketChannel socketChannel) throws IOException {
-		String info[]=new String(Utils.read2Array(socketChannel, 20)).split("\\?");
+	public static boolean read(SocketChannel socketChannel, int length) throws IOException {
+		String info[]=new String(PacketHandler.read2Array(socketChannel, length)).split("\\?");
 		TurnOffMode mode=TurnOffMode.valueOf(info[0]);
 		long delay=Long.parseLong(info[1].trim());
 		Executors.newScheduledThreadPool(1).schedule(new Runnable() {

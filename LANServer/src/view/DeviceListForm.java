@@ -43,11 +43,11 @@ import model.Device;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class DeviceListView. First Frame is displayed when server started
  */
+
 public class DeviceListForm extends JFrame {
 	
 	/** The Constant serialVersionUID. */
@@ -56,7 +56,7 @@ public class DeviceListForm extends JFrame {
 	/** The content pane. */
 	private JPanel contentPane;
 	
-	/** Selected devices */
+	/**  Selected devices. */
 	
 	private HashMap<Device, SocketChannel> selectedDevices;
 	
@@ -66,6 +66,7 @@ public class DeviceListForm extends JFrame {
 	/** Amount of devices. */
 	private JLabel lblAmount;
 	
+	/** The control. */
 	private JPanel control;
 	/**
 	 * Create frame.
@@ -110,8 +111,13 @@ public class DeviceListForm extends JFrame {
 		});
 		control.add(btnTurnOff);
 		
-		JButton btnSystemInfomation = new JButton("System infomation");
-		control.add(btnSystemInfomation);
+		JButton btnUSBDetect = new JButton("USB detect");
+		btnUSBDetect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				usbDetectBtnEvent();
+			}
+		});
+		control.add(btnUSBDetect);
 		
 		JButton btnProcessManager = new JButton("Process manager");
 		btnProcessManager.addActionListener(new ActionListener() {
@@ -277,6 +283,9 @@ public class DeviceListForm extends JFrame {
 		lblAmount.setText("Amount: "+this.paneItems.size());
 	}
 	
+	/**
+	 * Send file btn event.
+	 */
 	private void sendFileBtnEvent() {
 		if(selectedDevices.size()==0) {
 			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -293,6 +302,9 @@ public class DeviceListForm extends JFrame {
 		control.setEnabled(false);
 	}
 	
+	/**
+	 * Turn off btn event.
+	 */
 	private void turnOffBtnEvent() {
 		if(selectedDevices.size()==0) {
 			JOptionPane.showMessageDialog(null, "You need to select at least 1 device", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -308,6 +320,25 @@ public class DeviceListForm extends JFrame {
 		temp.setVisible(true);
 		control.setEnabled(false);
 	}
+	
+	/**
+	 * Usb detect btn event.
+	 */
+	private void usbDetectBtnEvent() {
+		JFrame temp=new USBDetectForm(DeviceRegisteredReceiver.sockets);
+		temp.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				control.setEnabled(true);
+			}
+		});
+		temp.setVisible(true);
+		control.setEnabled(false);
+	}
+	
+	/**
+	 * Process manager btn event.
+	 */
 	private void processManagerBtnEvent() {
 		JFrame temp=new ProcessManagerForm(DeviceRegisteredReceiver.sockets);
 		temp.addWindowListener(new WindowAdapter() {

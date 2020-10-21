@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import controller.Utils;
+import controller.PacketHandler;
 
 public class FileReceiver {
 	
@@ -29,12 +29,12 @@ public class FileReceiver {
 	 * @return always false to always at readable state
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean readInfo(SocketChannel socketChannel) throws IOException {
-		String temp[]=new String(Utils.read2Array(socketChannel, 1024), "UTF-8").split("\\?");
+	public static boolean readInfo(SocketChannel socketChannel, int length) throws IOException {
+		String temp[]=new String(PacketHandler.read2Array(socketChannel, length), "UTF-8").split("\\?");
 		fileLength=Long.parseLong(temp[1].trim());
 		f=new File(temp[0]);
 		if(f.exists()) f.delete();
-		Utils.writeHead(socketChannel, (byte)2);
+		PacketHandler.writeHead(socketChannel, (byte)2);
 		return false;
 	}
 	
@@ -46,21 +46,15 @@ public class FileReceiver {
 	 * @return always false to always at readable state
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean read(SocketChannel socketChannel) throws IOException {
-		ByteBuffer buff;
-		int count;
-		if(fileLength>=1024) {
-			buff=ByteBuffer.allocate(count=1024);
-		}else {
-			buff=ByteBuffer.allocate(count=(int)fileLength);
-		}
+	public static boolean read(SocketChannel socketChannel, int length) throws IOException {
+		ByteBuffer buff=ByteBuffer.allocate(length);
 		socketChannel.read(buff);
 		buff.flip();
 		FileOutputStream fo=new FileOutputStream(f, true);
 		fo.write(buff.array());
 		fo.close();
-		fileLength-=count;
-		if(fileLength>0) Utils.writeHead(socketChannel, (byte)2);
+		fileLength-=length;
+		if(fileLength>0) PacketHandler.writeHead(socketChannel, (byte)2);
 		return false;
 	}
 }

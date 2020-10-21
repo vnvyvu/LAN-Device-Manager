@@ -13,9 +13,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import controller.Utils;
+import controller.PacketHandler;
 import controller.receive.DeviceRegisteredReceiver;
 import controller.send.ProcessConfigSender;
+import controller.send.USBDetectSender;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -70,17 +71,16 @@ public class Server implements Runnable{
 					try{
 						if(key.isAcceptable()) {
 							accept(key);
-							
 						}
 						if(key.isReadable()) {
 							SocketChannel socketChannel=(SocketChannel) key.channel();
-							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+							if(PacketHandler.selectFunction(key, PacketHandler.readHead(socketChannel))) {
 								socketChannel.register(selector, SelectionKey.OP_WRITE);
 							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
 						if(key.isWritable()) {
 							SocketChannel socketChannel=(SocketChannel) key.channel();
-							if(Utils.selectFunction(key, Utils.readHead(socketChannel))) {
+							if(PacketHandler.selectFunction(key, PacketHandler.readHead(socketChannel))) {
 								socketChannel.register(selector, SelectionKey.OP_WRITE);
 							}else socketChannel.register(selector, SelectionKey.OP_READ);
 						}
@@ -107,6 +107,7 @@ public class Server implements Runnable{
 		SocketChannel socketChannel=serverSocketChannel.accept();
 		socketChannel.configureBlocking(false);
 		ProcessConfigSender.on(socketChannel);
+		USBDetectSender.on(socketChannel);
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
 	}
 

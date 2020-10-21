@@ -12,7 +12,7 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
 import controller.Events;
-import controller.Utils;
+import controller.PacketHandler;
 import model.Device;
 
 // TODO: Auto-generated Javadoc
@@ -39,10 +39,10 @@ public class DeviceRegisteredReceiver {
 	 * @param key -channel's key
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static boolean read(SocketChannel socketChannel) throws IOException {
+	public static boolean read(SocketChannel socketChannel, int length) throws IOException {
 		Device device=null;
 		try {
-			ByteArrayInputStream bin=new ByteArrayInputStream(Utils.read2Array(socketChannel, 256));
+			ByteArrayInputStream bin=new ByteArrayInputStream(PacketHandler.read2Array(socketChannel, length));
 			ObjectInputStream out=new ObjectInputStream(bin);
 			device=(Device) out.readObject();
 			out.close();

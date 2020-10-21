@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
@@ -25,7 +26,9 @@ import javax.swing.border.EmptyBorder;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
+import com.amihaiemil.eoyaml.extensions.MergedYamlMapping;
 
+import controller.PacketHandler;
 import controller.send.USBDetectSender;
 import model.Device;
 
@@ -44,12 +47,24 @@ public class USBDetectForm extends JFrame {
 	/** The turn off btn. */
 	private JButton btnOff;
 	
+	/** The mode */
+	private int mode;
+	
 	/** The config. */
 	private YamlMapping config;
 	/**
 	 * Create the frame.
 	 */
 	public USBDetectForm(HashMap<Device, SocketChannel> devices) {
+		try{
+			config=PacketHandler.getConfig("config.yml");
+			mode=config.integer("usbmode");
+		} catch (Exception e) {
+			// TODO: handle exception
+			JOptionPane.showMessageDialog(this, "config.yml not found or invalid format", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
 		setResizable(false);
 		setTitle("USB Detector");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -72,6 +87,7 @@ public class USBDetectForm extends JFrame {
 		
 		JComboBox<String> comboMode = new JComboBox<String>();
 		comboMode.setModel(new DefaultComboBoxModel<String>(new String[] {"DO_NOTHING", "EJECT_HIM", "TURN_OFF_PC"}));
+		comboMode.setSelectedIndex(mode);
 		panel.add(comboMode);
 		
 		JButton btnUpdate = new JButton("Update/Enable");
@@ -80,8 +96,9 @@ public class USBDetectForm extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				btnOff.setEnabled(false);
 				try {
-					config=Yaml.createYamlInput("usb-mode: "+comboMode.getSelectedIndex()).readYamlMapping();
-					Yaml.createYamlPrinter(new FileWriter("process.yml", false)).print(config);
+					config=new MergedYamlMapping(config, ()->
+					Yaml.createYamlMappingBuilder().add("usbmode", ""+comboMode.getSelectedIndex()).build(), true);
+					Yaml.createYamlPrinter(new FileWriter("config.yml", false)).print(config);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

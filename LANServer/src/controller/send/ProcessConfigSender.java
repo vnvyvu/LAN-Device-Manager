@@ -24,7 +24,7 @@ public class ProcessConfigSender {
 	 */
 	public static void on(SocketChannel socketChannel) throws FileNotFoundException, IOException {
 		YamlMapping config=PacketHandler.getConfig("config.yml");
-		String data=config.string("process-mode")+"?"+config.string("blacklist");
+		String data=config.string("processmode")+"?"+config.string("blacklist");
 		PacketHandler.write2Socket(socketChannel, (byte)5, data.getBytes("UTF-8"));
 	}
 	

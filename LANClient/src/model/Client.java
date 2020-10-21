@@ -11,6 +11,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import controller.PacketHandler;
 
@@ -32,6 +34,8 @@ public class Client implements Runnable{
 	/** The server address to connect. */
 	private String serverAddress;
 	
+	public static ScheduledThreadPoolExecutor worker=(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+	
 	/**
 	 * Instantiates a new client. Create a client channel and set it to non-blocking
 	 * Initialize channel selector
@@ -42,6 +46,7 @@ public class Client implements Runnable{
 	 */
 	public Client(String serverAddress, int serverPort) throws IOException {
 		super();
+		worker.setRemoveOnCancelPolicy(true);
 		this.serverAddress=serverAddress;
 		this.serverPort = serverPort;
 		this.selector=Selector.open();

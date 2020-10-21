@@ -22,6 +22,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
+import com.amihaiemil.eoyaml.extensions.MergedYamlMapping;
 
 import controller.PacketHandler;
 import controller.send.ProcessConfigSender;
@@ -46,12 +47,12 @@ public class ProcessManagerForm extends JFrame {
 	 */
 	public ProcessManagerForm(HashMap<Device, SocketChannel> devices) {
 		try{
-			config=PacketHandler.getConfig("process.yml");
-			mode=config.integer("mode");
+			config=PacketHandler.getConfig("config.yml");
+			mode=config.integer("processmode");
 			blacklist=config.string("blacklist");
 		} catch (Exception e) {
 			// TODO: handle exception
-			JOptionPane.showMessageDialog(this, "process.yml not found or invalid format", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "config.yml not found or invalid format", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		
@@ -92,8 +93,10 @@ public class ProcessManagerForm extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				btnOff.setEnabled(false);
 				try {
-					config=Yaml.createYamlInput("process-mode: "+comboMode.getSelectedIndex()+"\nblacklist: \""+txtBacklist.getText().toLowerCase()+"\"").readYamlMapping();
-					Yaml.createYamlPrinter(new FileWriter("process.yml", false)).print(config);
+					config=new MergedYamlMapping(config, ()->
+					Yaml.createYamlMappingBuilder().add("processmode", ""+comboMode.getSelectedIndex())
+					.add("blacklist", txtBacklist.getText()).build(), true);
+					Yaml.createYamlPrinter(new FileWriter("config.yml", false)).print(config);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

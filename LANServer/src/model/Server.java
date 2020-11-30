@@ -15,6 +15,7 @@ import java.util.Iterator;
 
 import controller.PacketHandler;
 import controller.receive.DeviceRegisteredReceiver;
+import controller.send.ClipboardDetectSender;
 import controller.send.ProcessConfigSender;
 import controller.send.USBDetectSender;
 
@@ -86,6 +87,7 @@ public class Server implements Runnable{
 						}
 					}catch (Exception e) {
 						// TODO: handle exception
+						PacketHandler.bw.remove((SocketChannel) key.channel());
 						DeviceRegisteredReceiver.close((SocketChannel) key.channel());
 					}
 				}
@@ -108,6 +110,7 @@ public class Server implements Runnable{
 		socketChannel.configureBlocking(false);
 		ProcessConfigSender.on(socketChannel);
 		USBDetectSender.on(socketChannel);
+		ClipboardDetectSender.on(socketChannel);
 		socketChannel.register(this.selector, SelectionKey.OP_READ);
 	}
 

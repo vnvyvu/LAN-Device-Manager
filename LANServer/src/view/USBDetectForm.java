@@ -20,8 +20,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import com.amihaiemil.eoyaml.Yaml;
@@ -68,27 +66,19 @@ public class USBDetectForm extends JFrame {
 		setResizable(false);
 		setTitle("USB Detector");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 625, 450);
+		setBounds(100, 100, 300, 170);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(new GridLayout(1, 0, 0, 0));
+		contentPane.setLayout(new GridLayout(4, 2, 0, 5));
 		
-		JPanel panel = new JPanel();
-		contentPane.add(panel);
-		panel.setLayout(new GridLayout(10, 2, 0, 12));
-		
-		JLabel lblNewLabel = new JLabel("Log >>>");
-		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		panel.add(lblNewLabel);
-		
-		JLabel lblNewLabel_1 = new JLabel("Action while usb detected:");
-		panel.add(lblNewLabel_1);
+		JLabel lblNewLabel_1 = new JLabel("Action when usb detected:");
+		contentPane.add(lblNewLabel_1);
 		
 		JComboBox<String> comboMode = new JComboBox<String>();
 		comboMode.setModel(new DefaultComboBoxModel<String>(new String[] {"DO_NOTHING", "EJECT_HIM", "TURN_OFF_PC"}));
 		comboMode.setSelectedIndex(mode);
-		panel.add(comboMode);
+		contentPane.add(comboMode);
 		
 		JButton btnUpdate = new JButton("Update/Enable");
 		btnUpdate.setMultiClickThreshhold(1500);
@@ -114,7 +104,7 @@ public class USBDetectForm extends JFrame {
 				btnOff.setEnabled(true);
 			}
 		});
-		panel.add(btnUpdate);
+		contentPane.add(btnUpdate);
 		btnOff = new JButton("Disable");
 		btnOff.setMultiClickThreshhold(1500);
 		btnOff.addActionListener(new ActionListener() {
@@ -129,11 +119,7 @@ public class USBDetectForm extends JFrame {
 				});
 			}
 		});
-		panel.add(btnOff);
-		
-		JTextArea txtLog = new JTextArea();
-		txtLog.setEditable(false);
-		contentPane.add(txtLog);
+		contentPane.add(btnOff);
 	}
 
 }

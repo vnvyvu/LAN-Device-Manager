@@ -6,11 +6,14 @@
 package view;
 
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,6 +31,9 @@ public class DeviceInfomationForm extends JFrame {
 	private JTextField txtModel;
 	private JTextField txtAddress;
 	private JTextField txtManufacturer;
+	private JButton btnDisplayScreen;
+	private JButton btnControlDevice;
+	private JButton btnDrivers;
 
 	/**
 	 * Create the frame.
@@ -48,11 +54,11 @@ public class DeviceInfomationForm extends JFrame {
 			}
 		});
 		setTitle(device.getName());
-		setBounds(100, 100, 540, 180);
+		setBounds(100, 100, 540, 260);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		contentPane.setLayout(new GridLayout(4, 2, 0, 0));
+		contentPane.setLayout(new GridLayout(6, 2, 5, 5));
 		
 		JLabel lblNewLabel = new JLabel("Operating System");
 		contentPane.add(lblNewLabel);
@@ -89,6 +95,61 @@ public class DeviceInfomationForm extends JFrame {
 		txtModel.setEditable(false);
 		contentPane.add(txtModel);
 		txtModel.setColumns(10);
+		
+		btnDisplayScreen = new JButton("Display device's screen");
+		btnDisplayScreen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				ScreenMonitorForm smf=new ScreenMonitorForm(device);
+				smf.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent e) {
+						// TODO Auto-generated method stub
+						btnDisplayScreen.setEnabled(true);
+						btnControlDevice.setEnabled(true);
+					}
+				});
+				btnDisplayScreen.setEnabled(false);
+				btnControlDevice.setEnabled(false);
+				smf.setVisible(true);
+			}
+		});
+		contentPane.add(btnDisplayScreen);
+		
+		btnControlDevice = new JButton("Control this device");
+		btnControlDevice.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DeviceControllerForm dcf=new DeviceControllerForm(device);
+				dcf.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent e) {
+						// TODO Auto-generated method stub
+						btnDisplayScreen.setEnabled(true);
+						btnControlDevice.setEnabled(true);
+					}
+				});
+				btnDisplayScreen.setEnabled(false);
+				btnControlDevice.setEnabled(false);
+				dcf.setVisible(true);
+			}
+		});
+		contentPane.add(btnControlDevice);
+		
+		btnDrivers = new JButton("Drivers");
+		btnDrivers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				DriverListForm dlf=new DriverListForm(device);
+				dlf.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent e) {
+						// TODO Auto-generated method stub
+						btnDrivers.setEnabled(true);
+					}
+				});
+				btnDrivers.setEnabled(false);
+				dlf.setVisible(true);
+			}
+		});
+		contentPane.add(btnDrivers);
 
 		setLocationRelativeTo(null);
 	}

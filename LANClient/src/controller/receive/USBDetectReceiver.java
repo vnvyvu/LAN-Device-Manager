@@ -59,10 +59,11 @@ public class USBDetectReceiver {
 				public void run() {
 					// TODO Auto-generated method stub
 					try {
-						Iterator<String> usb=WMIC.getLines("path Win32_PnPEntity", "pnpclass='WPD'", "name,manufacturer,systemname")
+						//wmic path Win32_PnPEntity where "pnpclass='WPD'" get name,manufacturer
+						Iterator<String> usb=WMIC.getLines("path Win32_PnPEntity", "pnpclass='WPD'", "name,manufacturer")
 								.map(l->l.trim().toLowerCase().replaceAll("\s{2,}", "|"))
 								.collect(Collectors.toSet()).iterator();
-						if(usb.hasNext()) usb.next();
+						//if(usb.hasNext()) usb.next();
 						if(usb.hasNext()) usb.next();
 						while(usb.hasNext()) {
 							String name=usb.next().split("\\|")[1];
@@ -92,7 +93,7 @@ public class USBDetectReceiver {
 	 * @param socketChannel the socket channel
 	 */
 	public static void on(SocketChannel socketChannel) {
-		future=Client.worker.scheduleWithFixedDelay(task, 0, 7, TimeUnit.SECONDS);
+		future=Client.worker.scheduleWithFixedDelay(task, 0, 5, TimeUnit.SECONDS);
 	}
 	
 	/**

@@ -28,7 +28,7 @@ public class USBDetectSender {
 	 */
 	public static void on(SocketChannel socketChannel) throws UnsupportedEncodingException, IOException {
 		YamlMapping config=PacketHandler.getConfig("config.yml");
-		String data=config.string("usbmode");
+		String data=config.string("usbmode");//1
 		PacketHandler.write2Socket(socketChannel, (byte)7, data.getBytes("UTF-8"));
 	}
 	

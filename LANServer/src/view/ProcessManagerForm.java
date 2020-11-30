@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
@@ -69,7 +71,7 @@ public class ProcessManagerForm extends JFrame {
 		contentPane.add(panel);
 		panel.setLayout(new GridLayout(10, 1, 0, 15));
 		
-		JLabel lblNewLabel = new JLabel("Blacklist>>>(Ex: nodepad|chorme|garena)");
+		JLabel lblNewLabel = new JLabel("Blacklist->");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		panel.add(lblNewLabel);
 		
@@ -84,8 +86,11 @@ public class ProcessManagerForm extends JFrame {
 		JTextArea txtBacklist = new JTextArea();
 		txtBacklist.setWrapStyleWord(true);
 		txtBacklist.setLineWrap(true);
-		txtBacklist.setText(blacklist);
-		contentPane.add(txtBacklist);
+		JScrollPane scrollTxtBlacklist=new JScrollPane(txtBacklist);
+		txtBacklist.setText(blacklist.replaceAll("\\|", "\n"));
+		
+		contentPane.add(scrollTxtBlacklist, BorderLayout.CENTER);
+		//contentPane.add(txtBacklist);
 		
 		JButton btnUpdate = new JButton("Update/Enable");
 		btnUpdate.setMultiClickThreshhold(1500);
@@ -93,9 +98,12 @@ public class ProcessManagerForm extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				btnOff.setEnabled(false);
 				try {
+					String temp=txtBacklist.getText().replaceAll("\n", "|");
+					if(temp.charAt(temp.length()-1)=='|') temp=temp.substring(0, temp.length()-1);
+					final String t=temp;
 					config=new MergedYamlMapping(config, ()->
 					Yaml.createYamlMappingBuilder().add("processmode", ""+comboMode.getSelectedIndex())
-					.add("blacklist", txtBacklist.getText()).build(), true);
+					.add("blacklist", t).build(), true);
 					Yaml.createYamlPrinter(new FileWriter("config.yml", false)).print(config);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block

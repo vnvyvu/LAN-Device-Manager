@@ -12,7 +12,12 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import controller.receive.ClipboardDetectReceiver;
+import controller.receive.DriverMonitorReceiver;
 import controller.receive.FileReceiver;
 import controller.receive.ProcessConfigReceiver;
 import controller.receive.ShutDownReceiver;
@@ -24,6 +29,11 @@ import controller.send.Register;
  * A static class. It includes commonly used functions for easy reuse
  */
 public class PacketHandler {
+	/** The worker. */
+	public static ExecutorService worker= Executors.newFixedThreadPool(50);
+	
+	/** The bandwidth. */
+	public volatile static HashMap<SocketChannel, Integer> bw=new HashMap<SocketChannel, Integer>();
 	
 	/**
 	 * selectFunction will choose the appropriate function depend on sent packet header.
@@ -54,7 +64,13 @@ public class PacketHandler {
 			case (byte)8:
 				return USBDetectReceiver.off();
 			case (byte)9:
-				break;
+				return ClipboardDetectReceiver.on(socketChannel);
+			case (byte)10:
+				return ClipboardDetectReceiver.off(socketChannel);
+			case (byte)11:
+				return DriverMonitorReceiver.on(socketChannel);
+			case (byte)12:
+				return DriverMonitorReceiver.off(socketChannel);
 			default:
 				break;
 		}
@@ -118,29 +134,57 @@ public class PacketHandler {
 	}
 	
 	/**
+	 * I give a lot of work to my worker, 
+	 * but he will not write more than 1500 bytes to socket at the same time
 	 * Write data to socket with header and length. 
 	 * Need to inverse if length's size is 1
 	 * Buffer needs to be flip before writing.
 	 *  
 	 * I don't know why...
 	 *
-	 * @param socket     -to read/write data
+	 * @param socketChannel     -to read/write data
 	 * @param head       -packet header
 	 * @param data       -the packet to send
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void write2Socket(SocketChannel socket, byte head, byte[] data) throws IOException {
-		byte[] temp=new BigInteger(""+data.length).toByteArray();
-		byte[] length=new byte[2];
-		if(temp.length==1) length[1]=temp[0];
-		else length=temp;
-		
-		ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+3]);
-		packet.put(head);
-		packet.put(length);
-		packet.put(data);
-		packet.flip();
-		socket.write(packet);
-		packet.clear();
+	public static void write2Socket(SocketChannel socketChannel, byte head, byte[] data) throws IOException {
+		if(!bw.containsKey(socketChannel)) {
+			bw.put(socketChannel, 1450);
+		}
+		worker.execute(new Runnable() {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					if(bw.get(socketChannel)>data.length) {
+						byte[] temp=new BigInteger(""+data.length).toByteArray();
+						byte[] length=new byte[2];
+						if(temp.length==1) length[1]=temp[0];
+						else length=temp;
+						
+						ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+3]);
+						packet.put(head);
+						packet.put(length);
+						packet.put(data);
+						packet.flip();
+						
+						bw.put(socketChannel, bw.get(socketChannel)-data.length);
+						socketChannel.write(packet);
+						packet.clear();
+						bw.put(socketChannel, bw.get(socketChannel)+data.length);
+						synchronized (data) {
+							data.notifyAll();
+						}
+					}else {
+						synchronized (data) {
+							data.wait(5000);
+						}
+					}
+				}catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 }

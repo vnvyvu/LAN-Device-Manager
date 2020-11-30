@@ -34,7 +34,7 @@ public class Client implements Runnable{
 	/** The server address to connect. */
 	private String serverAddress;
 	
-	public static ScheduledThreadPoolExecutor worker=(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+	public static ScheduledThreadPoolExecutor worker=(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(5);
 	
 	/**
 	 * Instantiates a new client. Create a client channel and set it to non-blocking
@@ -108,6 +108,7 @@ public class Client implements Runnable{
 					} catch (Exception e) {
 						// TODO: handle exception
 						key.channel().close();
+						//e.printStackTrace();
 					}
 				}
 			}

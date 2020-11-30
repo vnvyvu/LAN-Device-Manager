@@ -1,3 +1,4 @@
 processmode: 1
-blacklist: notepad
+blacklist: "notepad|sadsa|s|df|d|sf|dfdsfdsfd|s|fd|sf|d|sf|d|sf|ds|f|d|sf|d|s|f|ds|f|ds|f|d|sf|d|sf|ds|f|ds|f|ds|f|ds"
 usbmode: 1
+"clipboard-output-file": clipboard.txt

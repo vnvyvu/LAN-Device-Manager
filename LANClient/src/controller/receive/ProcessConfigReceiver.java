@@ -93,7 +93,7 @@ public class ProcessConfigReceiver{
 	 * @param socketChannel the socket channel
 	 */
 	public static void on(SocketChannel socketChannel) {
-		future=Client.worker.scheduleAtFixedRate(task, 0, 7, TimeUnit.SECONDS);
+		future=Client.worker.scheduleWithFixedDelay(task, 0, 3, TimeUnit.SECONDS);
 	}
 	
 	/**

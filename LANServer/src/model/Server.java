@@ -64,7 +64,7 @@ public class Server implements Runnable{
 		try {
 			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 			while(!Thread.currentThread().isInterrupted()) {
-				selector.select(5000);
+				selector.select();
 				Iterator<SelectionKey> keys=selector.selectedKeys().iterator();
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();

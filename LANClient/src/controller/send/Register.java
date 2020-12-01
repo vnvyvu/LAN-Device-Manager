@@ -16,6 +16,7 @@ import java.nio.channels.SocketChannel;
 
 import controller.PacketHandler;
 import controller.WMIC;
+import model.Client;
 import model.Device;
 
 // TODO: Auto-generated Javadoc
@@ -32,6 +33,8 @@ public class Register {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean write(SocketChannel socketChannel, byte head) throws IOException{
+		if(Client.isRegisted) return false;
+		Client.isRegisted=true;
 		String token[]=WMIC.get("computersystem", "Manufacturer,Model").split("\s{2,}");
 		InetAddress address=getCorrectLocalIP();
 		Device device=new Device(address.getHostName(), address.getHostAddress(), 

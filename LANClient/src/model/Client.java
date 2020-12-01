@@ -34,6 +34,9 @@ public class Client implements Runnable{
 	/** The server address to connect. */
 	private String serverAddress;
 	
+	/**  */
+	public volatile static boolean isRegisted=false;
+	
 	public static ScheduledThreadPoolExecutor worker=(ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(5);
 	
 	/**
@@ -59,6 +62,7 @@ public class Client implements Runnable{
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private void initClientChannel() throws IOException {
+		Client.isRegisted=false;
 		this.clientSocketChannel=SocketChannel.open();
 		this.clientSocketChannel.configureBlocking(false);
 		this.clientSocketChannel.register(selector, SelectionKey.OP_CONNECT);
@@ -78,7 +82,7 @@ public class Client implements Runnable{
 	public void run() {
 		try {
 			while(!Thread.currentThread().isInterrupted()) {
-				selector.select(5000);
+				selector.select();
 				Iterator<SelectionKey> keys=selector.selectedKeys().iterator();
 				while(keys.hasNext()) {
 					SelectionKey key=keys.next();
@@ -125,10 +129,12 @@ public class Client implements Runnable{
 	 *
 	 * @param key the key
 	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException 
 	 */
-	private void connect(SelectionKey key) throws IOException {
+	private void connect(SelectionKey key) throws IOException, InterruptedException {
 		SocketChannel socketChannel=(SocketChannel) key.channel();
 		if(socketChannel.isConnectionPending()) {
+			Thread.sleep(1000);
 			socketChannel.finishConnect();
 			PacketHandler.selectFunction(key, (byte)1);
 			socketChannel.register(selector, SelectionKey.OP_READ);

@@ -85,7 +85,7 @@ public class DeviceListForm extends JFrame {
 		list.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0)), "Devices on LAN", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		FlowLayout flowLayout = (FlowLayout) list.getLayout();
 		flowLayout.setAlignment(FlowLayout.LEFT);
-		initEvents(list);
+		initDeviceConnectEvent(list);
 		contentPane.add(list, BorderLayout.CENTER);
 		
 		control = new JPanel();
@@ -193,11 +193,11 @@ public class DeviceListForm extends JFrame {
 	}
 	
 	/**
-	 * Inits the protocols.
+	 * Initial when a device connected or disconnected.
 	 *
 	 * @param list the list
 	 */
-	private void initEvents(JPanel list) {
+	private void initDeviceConnectEvent(JPanel list) {
 		// TODO Auto-generated method stub
 		Events.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override

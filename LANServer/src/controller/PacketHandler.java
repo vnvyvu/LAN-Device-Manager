@@ -157,6 +157,7 @@ public class PacketHandler {
 				try {
 					
 					if(bw.get(socket)>data.length) {
+						bw.put(socket, bw.get(socket)-data.length);
 						byte[] temp=new BigInteger(""+data.length).toByteArray();
 						byte[] length=new byte[2];
 						if(temp.length==1) length[1]=temp[0];
@@ -168,16 +169,15 @@ public class PacketHandler {
 						packet.put(data);
 						packet.flip();
 						
-						bw.put(socket, bw.get(socket)-data.length);
 						socket.write(packet);
 						packet.clear();
 						bw.put(socket, bw.get(socket)+data.length);
-						synchronized (data) {
-							data.notifyAll();
+						synchronized (this) {
+							this.notify();
 						}
 					}else {
-						synchronized (data) {
-							data.wait(5000);
+						synchronized (this) {
+							this.wait(5000);
 						}
 					}
 				}catch (Exception e) {
@@ -186,6 +186,36 @@ public class PacketHandler {
 				}
 			}
 		});
+	}
+	
+	/**
+	 * If priority is set to true, 
+	 * this will be performed by the main thread
+	 * If priority is set to false, 
+	 * my worker will perform this
+	 *
+	 * @param socketChannel the socket channel
+	 * @param head the head
+	 * @param data the data
+	 * @param priority the priority
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	public static void write2Socket(SocketChannel socketChannel, byte head, byte[] data, boolean priority) throws IOException {
+		if(priority) {
+			byte[] temp=new BigInteger(""+data.length).toByteArray();
+			byte[] length=new byte[2];
+			if(temp.length==1) length[1]=temp[0];
+			else length=temp;
+			
+			ByteBuffer packet=ByteBuffer.wrap(new byte[data.length+3]);
+			packet.put(head);
+			packet.put(length);
+			packet.put(data);
+			packet.flip();
+			
+			socketChannel.write(packet);
+			packet.clear();
+		}else write2Socket(socketChannel, head, data);
 	}
 	
 	/**

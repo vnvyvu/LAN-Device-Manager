@@ -180,7 +180,7 @@ public class DeviceControllerForm extends JFrame {
 	 */
 	private void keyEvent() {
         setFocusTraversalKeysEnabled(false);
-        contentPane.addKeyListener(new KeyAdapter() {
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if(client!=null&&client.isRunning()) client.handleKeyEvent(e);

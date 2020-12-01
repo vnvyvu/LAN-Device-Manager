@@ -41,7 +41,7 @@ public class Register {
 		ObjectOutputStream out;
 		out = new ObjectOutputStream(bao);
 		out.writeObject(device);
-		PacketHandler.write2Socket(socketChannel, head, bao.toByteArray());
+		PacketHandler.write2Socket(socketChannel, head, bao.toByteArray(), true);
 		out.close();
 		bao.close();
 		return false;

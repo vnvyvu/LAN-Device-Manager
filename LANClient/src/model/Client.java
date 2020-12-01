@@ -108,6 +108,7 @@ public class Client implements Runnable{
 					} catch (Exception e) {
 						// TODO: handle exception
 						key.channel().close();
+						initClientChannel();
 						//e.printStackTrace();
 					}
 				}
@@ -131,6 +132,8 @@ public class Client implements Runnable{
 			socketChannel.finishConnect();
 			PacketHandler.selectFunction(key, (byte)1);
 			socketChannel.register(selector, SelectionKey.OP_READ);
+		}else {
+			socketChannel.register(selector, SelectionKey.OP_CONNECT);
 		}
 	}
 	

@@ -49,8 +49,8 @@ public class SendFileForm extends JFrame {
 	/** The file. */
 	private File file;
 	private JLabel lblNewLabel_1;
-	private JTextField txtClientDirectory;
 	public static JProgressBar progressSendFile;
+	private JLabel lblNewLabel;
 
 	/**
 	 * Create the frame.
@@ -82,12 +82,8 @@ public class SendFileForm extends JFrame {
 		contentPane.add(txtFileName);
 		txtFileName.setColumns(10);
 		
-		lblNewLabel_1 = new JLabel("Client directory (Default: D:)");
+		lblNewLabel_1 = new JLabel("File will be saved in \"file-output\" folder");
 		contentPane.add(lblNewLabel_1);
-		
-		txtClientDirectory = new JTextField();
-		contentPane.add(txtClientDirectory);
-		txtClientDirectory.setColumns(10);
 		
 		btnSend = new JButton("Send");
 		btnSend.setMultiClickThreshhold(1000);
@@ -102,7 +98,7 @@ public class SendFileForm extends JFrame {
 				}
 				selectedDevices.forEach((device, socketChannel)->{
 					try {
-						FileSender.writeInfo(socketChannel, "D:"+txtClientDirectory.getText(), file);
+						FileSender.writeInfo(socketChannel, file);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -110,6 +106,9 @@ public class SendFileForm extends JFrame {
 				});
 			}
 		});
+		
+		lblNewLabel = new JLabel("");
+		contentPane.add(lblNewLabel);
 		contentPane.add(btnSend);
 		
 		progressSendFile = new JProgressBar();
@@ -134,6 +133,7 @@ public class SendFileForm extends JFrame {
 	 * Handle file action.
 	 */
 	private void handleFileAction() {
+		if(progressSendFile.getValue()==100) progressSendFile.setValue(0);
 		JFileChooser fileChooser=new JFileChooser(new File("user.home"));
 		if(fileChooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 			this.file=fileChooser.getSelectedFile();

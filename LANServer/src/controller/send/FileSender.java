@@ -37,8 +37,8 @@ public class FileSender {
 	 * @param file the file will be send
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public static void writeInfo(SocketChannel socketChannel, String clientPath, File file) throws IOException {
-		String temp=clientPath+"\\"+file.getName()+"?"+file.length();
+	public static void writeInfo(SocketChannel socketChannel, File file) throws IOException {
+		String temp=file.getName()+"?"+file.length();
 		f=new RandomAccessFile(file, "r");
 		byteCount.put(socketChannel, (long)0);
 		ScheduledExecutorService worker=Executors.newSingleThreadScheduledExecutor();

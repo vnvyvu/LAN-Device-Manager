@@ -2,6 +2,7 @@ package view;
 
 import java.io.IOException;
 
+import controller.VNC;
 import model.Client;
 
 public class ClientRunner {
@@ -10,6 +11,7 @@ public class ClientRunner {
 		// TODO Auto-generated method stub
 		Client client;
 		try {
+			if(!VNC.isInstalled()) VNC.install();
 			client = new Client("localhost", 1333);
 			Thread thread=new Thread(client);
 			thread.start();

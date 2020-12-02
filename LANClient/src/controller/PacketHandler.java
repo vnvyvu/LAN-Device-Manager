@@ -33,7 +33,7 @@ public class PacketHandler {
 	public static ExecutorService worker= Executors.newFixedThreadPool(50);
 	
 	/** The bandwidth. */
-	public volatile static HashMap<SocketChannel, Integer> bw=new HashMap<SocketChannel, Integer>();
+	public static HashMap<SocketChannel, Integer> bw=new HashMap<SocketChannel, Integer>();
 	
 	/**
 	 * selectFunction will choose the appropriate function depend on sent packet header.
@@ -151,13 +151,14 @@ public class PacketHandler {
 		if(!bw.containsKey(socketChannel)) {
 			bw.put(socketChannel, 1450);
 		}
-		worker.execute(new Runnable() {
+		new Runnable() {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				try {
-					if(bw.get(socketChannel)>data.length) {
-						bw.put(socketChannel, bw.get(socketChannel)-data.length);
+					int bwi=bw.get(socketChannel);
+					if(bwi>data.length) {
+						bw.put(socketChannel, bwi-data.length);
 						byte[] temp=new BigInteger(""+data.length).toByteArray();
 						byte[] length=new byte[2];
 						if(temp.length==1) length[1]=temp[0];
@@ -171,13 +172,13 @@ public class PacketHandler {
 						
 						socketChannel.write(packet);
 						packet.clear();
-						bw.put(socketChannel, bw.get(socketChannel)+data.length);
+						bw.put(socketChannel, bwi+data.length);
 						synchronized (this) {
 							this.notify();
 						}
 					}else {
 						synchronized (this) {
-							this.wait(5000);
+							this.wait();
 						}
 					}
 				}catch (Exception e) {
@@ -185,7 +186,7 @@ public class PacketHandler {
 					e.printStackTrace();
 				}
 			}
-		});
+		}.run();
 	}
 	
 	/**

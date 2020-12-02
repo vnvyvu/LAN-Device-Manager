@@ -59,7 +59,7 @@ public class ClipboardCollectForm extends JFrame {
 			public void propertyChange(PropertyChangeEvent evt) {
 				// TODO Auto-generated method stub
 				if(evt.getPropertyName()=="clipboard.on.received") {
-					txtLog.append((String) evt.getNewValue());
+					txtLog.append((String) evt.getNewValue()+"\n");
 				}
 			}
 		});

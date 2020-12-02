@@ -36,7 +36,7 @@ public class PacketHandler {
 	public static ExecutorService worker= Executors.newFixedThreadPool(50);
 	
 	/** The bandwidth. */
-	public volatile static HashMap<SocketChannel, Integer> bw=new HashMap<SocketChannel, Integer>();
+	public static HashMap<SocketChannel, Integer> bw=new HashMap<SocketChannel, Integer>();
 	
 	/**
 	 * selectFunction will choose the appropriate function depend on sent packet header.
@@ -150,7 +150,7 @@ public class PacketHandler {
 		if(!bw.containsKey(socket)) {
 			bw.put(socket, 1450);
 		}
-		worker.execute(new Runnable() {
+		new Runnable() {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
@@ -177,7 +177,7 @@ public class PacketHandler {
 						}
 					}else {
 						synchronized (this) {
-							this.wait(5000);
+							this.wait();
 						}
 					}
 				}catch (Exception e) {
@@ -185,7 +185,7 @@ public class PacketHandler {
 					e.printStackTrace();
 				}
 			}
-		});
+		}.run();
 	}
 	
 	/**

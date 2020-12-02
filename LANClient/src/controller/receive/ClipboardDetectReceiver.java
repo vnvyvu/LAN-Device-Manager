@@ -23,7 +23,7 @@ import controller.PacketHandler;
 public class ClipboardDetectReceiver {
 	
 	/** The listener. */
-	private static FlavorListener l;
+	private volatile static FlavorListener l;
 	
 	/**
 	 * On function.
@@ -35,7 +35,7 @@ public class ClipboardDetectReceiver {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean on(SocketChannel socketChannel) throws NumberFormatException, IOException {
-		if(Toolkit.getDefaultToolkit().getSystemClipboard().getFlavorListeners().length>0) return false;
+		//if(Toolkit.getDefaultToolkit().getSystemClipboard().getFlavorListeners().length>0) return false;
 		Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(l=new FlavorListener() { 
 			   @Override 
 			   public void flavorsChanged(FlavorEvent e) {
@@ -47,6 +47,7 @@ public class ClipboardDetectReceiver {
 					   PacketHandler.write2Socket(socketChannel, (byte)3, data.getBytes());
 				   } catch (HeadlessException | UnsupportedFlavorException | IOException e1) {
 					   // TODO Auto-generated catch block
+					   e1.printStackTrace();
 				   }
 			   } 
 		});
